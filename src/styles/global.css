@@ -113,3 +113,13 @@ select {
     animation: none !important;
   }
 }
+
+/* 목업 모드 안내 띠 */
+.mock-banner {
+  margin: 0;
+  padding: 6px 16px;
+  background: #fbe7a8;
+  color: #5b4500;
+  font-size: 0.8125rem;
+  text-align: center;
+}

@@ -1,0 +1,70 @@
+.page-header {
+  background: var(--board);
+  color: var(--chalk);
+  padding: 40px 0 36px;
+}
+
+.page-header__inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  word-break: keep-all;
+}
+
+.page-header__desc {
+  margin: 8px 0 0;
+  max-width: 40em;
+  color: var(--board-dim);
+  word-break: keep-all;
+}
+
+.page-header__aside {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 녹색 띠 위에 올라가는 버튼 */
+.page-header .button-on-board {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--board-line);
+  border-radius: var(--radius);
+  color: var(--chalk);
+  font-weight: 500;
+}
+
+.page-header .button-on-board:hover {
+  background: var(--board-line);
+}
+
+.page-header .button-on-board.is-primary {
+  border-color: var(--bulb);
+  background: var(--bulb);
+  color: var(--ink);
+}
+
+.page-header .button-on-board.is-primary:hover {
+  background: #ffc61a;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    padding: 28px 0 26px;
+  }
+
+  .page-header h1 {
+    font-size: 1.625rem;
+  }
+}

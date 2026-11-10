@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import useApi from '../hooks/useApi.js';
 import { fetchSeasons, fetchStandings } from '../api/mainApi.js';
-import { USE_MOCK } from '../api/client.js';
 import { FIRST_SEASON, LAST_SEASON } from '../constants/seasons.js';
 import SearchBox from '../components/SearchBox.jsx';
 import SeasonPlates from '../components/SeasonPlates.jsx';
@@ -53,7 +52,6 @@ export default function MainPage() {
               <div className="hero__board-meta">
                 {hasChampion && <span>🏆 한국시리즈 우승</span>}
                 {asOfDate && <span>{asOfDate} 기준</span>}
-                {USE_MOCK && <span className="hero__mock">샘플 데이터</span>}
               </div>
             </div>
             <StandingsBoard
