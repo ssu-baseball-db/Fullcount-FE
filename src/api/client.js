@@ -38,20 +38,32 @@ function defaultMessage(status) {
  * GET 요청을 보내고 JSON 을 돌려준다.
  * 예) getJson('/api/seasons/2024/batting-stats', { sort: 'avg', qualified: true })
  */
-export async function getJson(path, params = {}) {
+export function getJson(path, params = {}) {
+  return requestJson('GET', path, params);
+}
+
+/**
+ * POST 요청을 보내고 JSON 을 돌려준다. (본문 없이 주소만으로 요청하는 API용)
+ * 예) postJson('/api/games/20240915LGHT0/summary')
+ */
+export function postJson(path, params = {}) {
+  return requestJson('POST', path, params);
+}
+
+async function requestJson(method, path, params) {
   const query = toQueryString(params);
 
   if (USE_MOCK) {
     // 목업 코드는 목업 모드일 때만 불러온다 (실제 배포 파일에는 들어가지 않음)
     const { handleMockRequest } = await import('../mock/mockServer.js');
     await new Promise((resolve) => setTimeout(resolve, 200)); // 실제 네트워크처럼 약간 지연
-    return handleMockRequest(path, Object.fromEntries(new URLSearchParams(query)));
+    return handleMockRequest(path, Object.fromEntries(new URLSearchParams(query)), method);
   }
 
   const url = query ? `${path}?${query}` : path;
   let response;
   try {
-    response = await fetch(url, { headers: { Accept: 'application/json' } });
+    response = await fetch(url, { method, headers: { Accept: 'application/json' } });
   } catch {
     throw new ApiError(0, '서버에 연결할 수 없습니다. 백엔드(8080)가 켜져 있는지 확인해 주세요.');
   }
