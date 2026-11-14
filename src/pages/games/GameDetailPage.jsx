@@ -25,11 +25,12 @@ export default function GameDetailPage() {
   const [params, setParams] = useSearchParams();
   const side = params.get('side') === 'home' ? 'home' : 'away';
 
-  const { data: game, loading, error } = useApi(() => fetchGameDetail(gameId), [gameId]);
+  const [detailVersion, setDetailVersion] = useState(0);
+  const { data: game, loading, error } = useApi(() => fetchGameDetail(gameId), [gameId, detailVersion]);
   const completed = game?.status === 'COMPLETED';
   // 요약·이벤트는 종료 경기일 때만 부른다. 실패해도 경기 상세는 그대로 보여준다
   const summary = useApi(() => fetchGameSummary(gameId), [gameId], { enabled: completed });
-  const events = useApi(() => fetchGameEvents(gameId), [gameId], { enabled: completed });
+  const events = useApi(() => fetchGameEvents(gameId), [gameId, detailVersion], { enabled: completed });
 
   if (!game) {
     return (
@@ -83,7 +84,8 @@ export default function GameDetailPage() {
             <div className="section__head">
               <h2 id="summary-title">경기 요약</h2>
             </div>
-            <SummaryCard gameId={game.gameId} loaded={summary} canCreate={hasDetail && hasBox} />
+            <SummaryCard key={gameId} gameId={game.gameId} loaded={summary}
+              onCreated={() => setDetailVersion((version) => version + 1)} />
           </section>
         )}
 
@@ -241,7 +243,7 @@ function Scoreboard({ game }) {
 }
 
 // AI 요약 카드 (3.3): 저장된 요약이 있으면 보여주고, 없으면 '요약 만들기' 버튼으로 생성을 요청한다
-function SummaryCard({ gameId, loaded, canCreate }) {
+function SummaryCard({ gameId, loaded, onCreated }) {
   const [created, setCreated] = useState(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
@@ -253,6 +255,7 @@ function SummaryCard({ gameId, loaded, canCreate }) {
     setCreateError(null);
     try {
       setCreated(await createGameSummary(gameId));
+      onCreated();
     } catch (error) {
       setCreateError(error);
     } finally {
@@ -263,27 +266,16 @@ function SummaryCard({ gameId, loaded, canCreate }) {
   if (loaded.loading) return <p className="status">요약을 불러오는 중…</p>;
 
   if (!saved) {
-    const reason =
-      createError?.status === 409
-        ? '요약에 필요한 이닝별 점수·선수 기록이 아직 없어 요약을 만들 수 없습니다.'
-        : createError?.status === 503
-          ? '지금은 요약 생성 서비스를 쓸 수 없습니다. 아래 경기 기록은 그대로 볼 수 있습니다.'
-          : createError?.message;
+    const reason = createError?.message;
     return (
       <div className="card summary-card">
         <p className="summary-card__badge">AI 요약</p>
-        {canCreate ? (
-          <>
-            <p className="summary-card__empty">
-              이 경기는 아직 저장된 요약이 없습니다. 경기 기록에 있는 사실만으로 요약을 만들 수 있습니다.
-            </p>
-            <button type="button" className="button button--primary summary-card__button" onClick={create} disabled={creating}>
-              {creating ? '요약 만드는 중…' : 'AI 요약 만들기'}
-            </button>
-          </>
-        ) : (
-          <p className="summary-card__empty">이닝별 점수와 선수 기록이 등록되면 AI 요약을 만들 수 있습니다.</p>
-        )}
+        <p className="summary-card__empty">
+          저장된 요약이 없습니다. 필요한 상세 기록을 불러와 요약을 만들 수 있습니다.
+        </p>
+        <button type="button" className="button button--primary summary-card__button" onClick={create} disabled={creating}>
+          {creating ? '요약 만드는 중…' : 'AI 요약 만들기'}
+        </button>
         {reason && (
           <p className="summary-card__error" role="alert">
             {reason}
