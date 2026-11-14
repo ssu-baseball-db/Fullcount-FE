@@ -1,12 +1,14 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi.js';
-import { comparePlayers, fetchPlayerSeasonStats } from '../../api/playerApi.js';
+import { comparePlayers, fetchPlayerSeasonStats, fetchSeasonBests } from '../../api/playerApi.js';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import StatusMessage from '../../components/common/StatusMessage.jsx';
 import PlayerPicker from '../../components/common/PlayerPicker.jsx';
+import RadarChart from '../../components/common/RadarChart.jsx';
 import { SeasonSelect, SegmentedTabs } from '../../components/common/Controls.jsx';
 import { CATEGORY_LABELS, PLAYER_TYPES } from '../../constants/stats.js';
 import { formatStat, formatYears } from '../../utils/format.js';
+import { toScore } from '../../utils/score.js';
 import { readOptionalYear, withParams } from '../../utils/params.js';
 import './PlayerPages.css';
 
@@ -26,7 +28,10 @@ function useSelectedPlayer(playerId, type) {
 }
 
 /**
- * 선수 2명 비교 페이지  /compare?a=선수ID&b=선수ID&type=batter&season=2024
+ * 선수 2명 비교 페이지
+ * - 시즌 비교: 레이더(오각형) 차트. 항목마다 그 시즌 1위 기록을 100점으로 환산해 그린다.
+ * - 통산 비교: 항목별 막대 비교. (통산은 '누구 대비 몇 점'인지 기준을 정하기 어려워 원래 값으로 비교)
+ *  /compare?a=선수ID&b=선수ID&type=batter&season=2024
  * 사용 API: GET /api/players/compare (4.1), GET /api/players (선수 고르기), season-stats (고른 선수 정보)
  * 타자는 타율·홈런·타점·도루·OPS, 투수는 승·ERA·탈삼진·세이브·WHIP 를 비교한다. (ERA·WHIP 는 낮을수록 우위)
  */
@@ -45,6 +50,9 @@ export default function ComparePage() {
   const { data, loading, error } = useApi(() => comparePlayers({ playerA: a, playerB: b, type, season }), [a, b, type, season], {
     enabled: !!a && !!b && !samePlayer,
   });
+
+  // 시즌 비교일 때만: 항목별 그 시즌 1위 기록 (100점 기준)
+  const bests = useApi(() => fetchSeasonBests(season, type), [season, type], { enabled: !!season && !!data });
 
   const winsA = data?.metrics.filter((m) => m.better === 'A').length ?? 0;
   const winsB = data?.metrics.filter((m) => m.better === 'B').length ?? 0;
@@ -110,16 +118,20 @@ export default function ComparePage() {
                 <ComparedName player={data.playerB} season={data.season} type={data.type} side="B" />
               </div>
 
-              <p className="compare-result__period">
-                {data.season ? `${data.season} 시즌` : '통산 (2015년 이후)'} 기준, 항목별로 더 나은 쪽을 표시합니다.
-                평균자책점·WHIP 는 낮을수록 우위입니다.
-              </p>
-
-              <ul className="compare-rows">
-                {data.metrics.map((metric) => (
-                  <MetricRow key={metric.key} metric={metric} />
-                ))}
-              </ul>
+              {data.season ? (
+                <SeasonRadar data={data} bests={bests} />
+              ) : (
+                <>
+                  <p className="compare-result__period">
+                    통산 (2015년 이후) 기준, 항목별로 더 나은 쪽을 표시합니다. 평균자책점·WHIP 는 낮을수록 우위입니다.
+                  </p>
+                  <ul className="compare-rows">
+                    {data.metrics.map((metric) => (
+                      <MetricRow key={metric.key} metric={metric} />
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           )}
         </section>
@@ -131,6 +143,8 @@ export default function ComparePage() {
 function ComparedName({ player, season, type, side }) {
   return (
     <div className={`compare-name compare-name--${side}`}>
+      {/* 레이더 차트 색과 맞춘 표시 (A: 녹색, B: 빨강) */}
+      <span className={`compare-name__swatch is-${side.toLowerCase()}`} aria-hidden="true" />
       <Link to={`/players/${player.playerId}?type=${type}`} className="compare-name__link">
         {player.playerName}
       </Link>
@@ -167,5 +181,82 @@ function MetricRow({ metric }) {
       </span>
       <span className={`compare-row__value is-b ${sideClass('B')}`}>{formatStat(key, playerB)}</span>
     </li>
+  );
+}
+
+// 시즌 비교: 레이더 차트 + 항목별 기록·점수 표
+function SeasonRadar({ data, bests }) {
+  if (bests.error) {
+    return <StatusMessage error={bests.error} />;
+  }
+  if (!bests.data) {
+    return <p className="compare-result__period">{data.season} 시즌 1위 기록을 불러오는 중…</p>;
+  }
+
+  const scoresOf = (side) =>
+    Object.fromEntries(
+      data.metrics.map((m) => [m.key, toScore(m.key, side === 'A' ? m.playerA : m.playerB, bests.data[m.key])])
+    );
+  const scoresA = scoresOf('A');
+  const scoresB = scoresOf('B');
+  const axes = data.metrics.map((m) => ({ key: m.key, label: CATEGORY_LABELS[m.key] ?? m.key }));
+
+  // 기록이 없는 선수는 그리지 않는다
+  const series = [
+    data.playerA.hasRecord && { name: data.playerA.playerName, scores: scoresA, tone: 'a' },
+    data.playerB.hasRecord && { name: data.playerB.playerName, scores: scoresB, tone: 'b' },
+  ].filter(Boolean);
+
+  const scoreText = (score) => (score == null ? '' : `${Math.round(score)}점`);
+
+  return (
+    <div className="season-radar">
+      <div className="season-radar__chart">
+        <RadarChart
+          axes={axes}
+          series={series}
+          label={`${data.season} 시즌 ${data.playerA.playerName}, ${data.playerB.playerName} 비교 레이더 차트`}
+        />
+      </div>
+
+      <div className="season-radar__detail">
+        <p className="compare-result__period">
+          {data.season} 시즌 각 항목 1위 기록을 100점으로 환산했습니다. 타율·OPS·평균자책점·WHIP 는 규정타석·규정이닝을
+          채운 선수 중 1위가 기준이며, 평균자책점·WHIP 는 낮을수록 점수가 높습니다.
+        </p>
+
+        <table className="radar-table">
+          <caption className="visually-hidden">항목별 기록과 점수</caption>
+          <thead>
+            <tr>
+              <th scope="col">항목</th>
+              <th scope="col" className="is-a">
+                {data.playerA.playerName}
+              </th>
+              <th scope="col" className="is-b">
+                {data.playerB.playerName}
+              </th>
+              <th scope="col">시즌 1위 (100점)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.metrics.map((m) => (
+              <tr key={m.key}>
+                <th scope="row">{CATEGORY_LABELS[m.key] ?? m.key}</th>
+                <td className={m.better === 'A' ? 'is-better is-a' : 'is-a'}>
+                  <span className="num">{formatStat(m.key, m.playerA)}</span>
+                  <small>{scoreText(scoresA[m.key])}</small>
+                </td>
+                <td className={m.better === 'B' ? 'is-better is-b' : 'is-b'}>
+                  <span className="num">{formatStat(m.key, m.playerB)}</span>
+                  <small>{scoreText(scoresB[m.key])}</small>
+                </td>
+                <td className="num">{formatStat(m.key, bests.data[m.key])}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

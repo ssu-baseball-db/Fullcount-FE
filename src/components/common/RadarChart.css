@@ -1,0 +1,70 @@
+.radar {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  margin: 0 auto;
+  font-family: var(--font-body);
+  overflow: visible;
+}
+
+.radar__ring {
+  fill: #fbf6ec;
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.radar__ring.is-outer {
+  stroke: #c9b796;
+  stroke-width: 1.5;
+}
+
+.radar__axis {
+  stroke: var(--rule);
+  stroke-dasharray: 3 4;
+}
+
+.radar__tick {
+  fill: #9a8a74;
+  font-size: 11px;
+}
+
+.radar__label {
+  fill: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 선수 A: 잔디 녹색 / 선수 B: 야구공 실밥 빨강 */
+.radar__series.is-a {
+  --tone: var(--board);
+}
+
+.radar__series.is-b {
+  --tone: #c8102e;
+}
+
+.radar__area {
+  fill: var(--tone);
+  fill-opacity: 0.22;
+  stroke: var(--tone);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.radar__dot {
+  fill: var(--surface);
+  stroke: var(--tone);
+  stroke-width: 2.5;
+}
+
+/* 좁은 화면에서는 그림이 작아지므로 글자를 키운다 */
+@media (max-width: 640px) {
+  .radar__label {
+    font-size: 21px;
+  }
+
+  .radar__tick {
+    font-size: 14px;
+  }
+}

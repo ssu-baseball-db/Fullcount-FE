@@ -1,5 +1,7 @@
 // 선수 API (openapi.yaml: 선수 기록 1.1, 1.4 / 선수 비교 및 분석 4.1)
 import { getJson } from './client.js';
+import { fetchSeasonStats } from './statsApi.js';
+import { COMPARE_METRICS, RATE_METRICS } from '../constants/stats.js';
 
 /**
  * 1.1 선수 검색
@@ -69,4 +71,26 @@ export function fetchPlayerSeasonStats(playerId, type) {
  */
 export function comparePlayers({ playerA, playerB, type, season }) {
   return getJson('/api/players/compare', { playerA, playerB, type, season });
+}
+
+/**
+ * 시즌 비교 레이더 차트의 기준값: 항목별 그 시즌 1위 기록
+ * 비교 항목마다 시즌 기록 API를 정렬해서 부르고 맨 앞 선수의 값을 쓴다.
+ *   예) GET /api/seasons/2024/batting-stats?sort=homeRuns → 첫 줄의 homeRuns = 그 시즌 최다 홈런
+ *   비율 기록(타율·OPS·ERA·WHIP)은 qualified=true 로 규정 충족 선수 중 1위만 본다.
+ * 돌려주는 형식: { avg: 0.36, homeRuns: 46, ... }  (기록이 없으면 null)
+ */
+export async function fetchSeasonBests(season, type) {
+  const kind = type === 'pitcher' ? 'pitching' : 'batting';
+  const entries = await Promise.all(
+    COMPARE_METRICS[type].map(async (key) => {
+      const rows = await fetchSeasonStats(season, kind, {
+        sort: key,
+        qualified: RATE_METRICS.includes(key) ? true : undefined,
+      });
+      const best = rows.find((row) => row[key] != null);
+      return [key, best ? best[key] : null];
+    })
+  );
+  return Object.fromEntries(entries);
 }

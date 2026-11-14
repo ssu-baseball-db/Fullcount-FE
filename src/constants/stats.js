@@ -103,3 +103,16 @@ export const PLAYER_TYPES = [
   { value: 'batter', label: '타자' },
   { value: 'pitcher', label: '투수' },
 ];
+
+// 선수 비교 항목 (백엔드 compare API 의 metrics 순서와 같음)
+export const COMPARE_METRICS = {
+  batter: ['avg', 'homeRuns', 'runsBattedIn', 'stolenBases', 'ops'],
+  pitcher: ['wins', 'era', 'strikeouts', 'saves', 'whip'],
+};
+
+// 낮을수록 좋은 기록
+export const LOWER_IS_BETTER = ['era', 'whip', 'losses', 'runsAllowed'];
+
+// 시즌 1위 기록을 구할 때 규정타석·규정이닝 충족 선수 중에서만 찾는 비율 기록
+// (1타수 1안타 타율 1.000 같은 기록이 1위가 되지 않게)
+export const RATE_METRICS = ['avg', 'obp', 'slg', 'ops', 'era', 'whip'];
