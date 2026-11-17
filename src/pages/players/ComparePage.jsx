@@ -5,6 +5,7 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import StatusMessage from '../../components/common/StatusMessage.jsx';
 import PlayerPicker from '../../components/common/PlayerPicker.jsx';
 import RadarChart from '../../components/common/RadarChart.jsx';
+import CompareSuggestions from './CompareSuggestions.jsx';
 import { SegmentedTabs } from '../../components/common/Controls.jsx';
 import { CATEGORY_LABELS, PLAYER_TYPES } from '../../constants/stats.js';
 import { formatStat, formatYears } from '../../utils/format.js';
@@ -50,6 +51,7 @@ function readSeasonChoice(value, legacySeason, seasons) {
  * - 한 명이라도 통산이면: 항목별 막대 비교 (통산은 '누구 대비 몇 점'인지 기준을 정하기 어려워 원래 값으로 비교)
  * 사용 API: 시즌이 같으면 GET /api/players/compare (4.1), 다르면 GET /api/players/{id}/season-stats (1.4) 두 번,
  *          선수 고르기 GET /api/players, 시즌 1위 기록 GET /api/seasons/{year}/batting-stats·pitching-stats
+ * 선수를 아직 두 명 고르지 않았으면 검색창 아래에 '추천 선수'(시즌 기록 순위 타자·투수 각 5명)를 보여 준다.
  */
 export default function ComparePage() {
   const [params, setParams] = useSearchParams();
@@ -86,6 +88,18 @@ export default function ComparePage() {
   const view = data && buildView(data, radarMode ? bestsA.data : null, radarMode ? bestsB.data : null);
   const winsA = view?.metrics.filter((m) => m.better === 'A').length ?? 0;
   const winsB = view?.metrics.filter((m) => m.better === 'B').length ?? 0;
+
+  // 추천 선수를 누르면: 빈 칸(A → B)에 넣고 시즌을 추천 시즌으로 맞춘다.
+  // 지금과 다른 유형(예: 타자 비교 중에 투수)을 누르면 유형을 바꾸고 그 선수를 A 에 넣는다.
+  const pickSuggested = (player, playerType, year) => {
+    if (playerType !== type) {
+      update({ type: playerType, a: player.playerId, sa: year, b: null, sb: null });
+    } else if (!a) {
+      update({ a: player.playerId, sa: year });
+    } else {
+      update({ b: player.playerId, sb: year });
+    }
+  };
 
   // 선수 카드 안의 시즌 선택 상자
   const seasonPicker = (player, season, key) =>
@@ -162,8 +176,9 @@ export default function ComparePage() {
           </PlayerPicker>
         </div>
 
+        {(!a || !b) && <CompareSuggestions type={type} selectedId={a ?? b} onPick={pickSuggested} />}
+
         <section className="section">
-          {(!a || !b) && <StatusMessage empty emptyText="비교할 선수 두 명을 골라 주세요." />}
           {samePick && (
             <StatusMessage empty emptyText="같은 선수의 같은 시즌끼리는 비교할 수 없습니다. 선수나 시즌을 바꿔 주세요." />
           )}

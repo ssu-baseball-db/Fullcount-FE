@@ -49,7 +49,7 @@ npm run build
 | 메인 | `/` | standings, batting-stats·pitching-stats (부문별 TOP 5) | 장정훈 |
 | 선수 찾기 | `/players?name=` | `GET /api/players` (1.1) | 장정훈 |
 | 선수 상세 | `/players/{playerId}?type=batter\|pitcher` | `GET /api/players/{id}/season-stats` (1.4) | 장정훈 |
-| 선수 비교 | `/compare?a=&b=&type=&season=` | `GET /api/players/compare` (4.1) | 장정훈 |
+| 선수 비교 | `/compare?a=&b=&type=&sa=&sb=` | `GET /api/players/compare` (4.1), 시즌이 다르면 `GET /api/players/{id}/season-stats` (1.4), 추천 선수는 `GET /api/seasons/{year}/batting-stats?sort=avg`·`pitching-stats?sort=era` (규정 충족 상위 5명) | 장정훈 |
 | 팀 목록 | `/teams?year=&sort=` | standings, `GET /api/seasons/{year}/team-stats` (2.1) | 장정훈 |
 | 팀 상세 | `/teams/{teamId}?year=&type=&sort=` | standings, `teams/{teamId}/batting-stats·pitching-stats` (2.2, 2.3) | 장정훈 |
 | 기록 순위 | `/leaders?year=&type=&category=&team=&qualified=` | `batting-stats`, `pitching-stats` (1.2, 1.3) | 장정훈 |
