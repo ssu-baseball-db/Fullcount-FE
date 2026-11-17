@@ -1,7 +1,7 @@
 // 선수 API (openapi.yaml: 선수 기록 1.1, 1.4 / 선수 비교 및 분석 4.1)
-import { getJson } from './client.js';
+import { getJson, ApiError } from './client.js';
 import { fetchSeasonStats } from './statsApi.js';
-import { COMPARE_METRICS, RATE_METRICS } from '../constants/stats.js';
+import { COMPARE_METRICS, RATE_METRICS, LOWER_IS_BETTER } from '../constants/stats.js';
 
 /**
  * 1.1 선수 검색
@@ -93,4 +93,61 @@ export async function fetchSeasonBests(season, type) {
     })
   );
   return Object.fromEntries(entries);
+}
+
+// 두 값 중 어느 쪽이 나은지: 'A' | 'B' | 'tie' | null(한쪽이라도 기록 없음)
+export function betterOf(key, valueA, valueB) {
+  if (valueA == null || valueB == null) return null;
+  if (valueA === valueB) return 'tie';
+  const aWins = LOWER_IS_BETTER.includes(key) ? valueA < valueB : valueA > valueB;
+  return aWins ? 'A' : 'B';
+}
+
+/**
+ * 선수마다 다른 시즌으로 비교 (예: 2025 김도영 vs 2015 이승엽). season 이 null 이면 통산(2015년 이후).
+ * - 두 선수의 시즌이 같으면 (둘 다 통산 포함) → 백엔드 비교 API(4.1)를 그대로 쓴다
+ * - 시즌이 다르면 → 선수별 연도별 기록 API(1.4)를 두 번 불러, 고른 시즌(또는 통산) 기록을 꺼내 비교한다
+ *   (백엔드 비교 API는 시즌을 하나만 받기 때문)
+ * 돌려주는 형식: 비교 API 응답과 같고 seasonA, seasonB 가 추가된다.
+ */
+export async function compareSeasons({ playerA, playerB, type, seasonA, seasonB }) {
+  if (seasonA === seasonB) {
+    const result = await comparePlayers({ playerA, playerB, type, season: seasonA });
+    return { ...result, seasonA, seasonB };
+  }
+
+  const [statsA, statsB] = await Promise.all([
+    fetchPlayerSeasonStats(playerA, type),
+    fetchPlayerSeasonStats(playerB, type),
+  ]);
+  if (statsA.seasons.length === 0 || statsB.seasons.length === 0) {
+    throw new ApiError(400, '같은 기록 유형의 선수를 선택해 주세요.');
+  }
+
+  // 시즌을 고르면 그 시즌 한 줄, 통산이면 career (한 선수의 한 시즌 기록은 DB에 한 줄)
+  const pick = (stats, season) => (season == null ? stats.career : stats.seasons.find((s) => s.season === season) ?? null);
+  const recordA = pick(statsA, seasonA);
+  const recordB = pick(statsB, seasonB);
+
+  const metrics = COMPARE_METRICS[type].map((key) => {
+    const valueA = recordA?.[key] ?? null;
+    const valueB = recordB?.[key] ?? null;
+    return { key, playerA: valueA, playerB: valueB, better: betterOf(key, valueA, valueB) };
+  });
+
+  const summary = (stats, record) => ({
+    playerId: stats.player.playerId,
+    playerName: stats.player.playerName,
+    hasRecord: record != null,
+  });
+
+  return {
+    type,
+    season: null,
+    seasonA,
+    seasonB,
+    playerA: summary(statsA, recordA),
+    playerB: summary(statsB, recordB),
+    metrics,
+  };
 }

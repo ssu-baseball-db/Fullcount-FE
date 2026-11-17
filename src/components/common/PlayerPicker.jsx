@@ -11,8 +11,9 @@ import './PlayerPicker.css';
  * selected : 고른 선수 { playerId, playerName, detail } 또는 null
  * onSelect : 선수를 고르면 { playerId, playerName } 로 호출
  * onClear  : '다른 선수 고르기'를 누르면 호출
+ * children : 선수를 고른 뒤 카드 안에 더 보여줄 내용 (예: 시즌 선택)
  */
-export default function PlayerPicker({ label, type, selected, onSelect, onClear }) {
+export default function PlayerPicker({ label, type, selected, onSelect, onClear, children }) {
   const inputId = useId();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -56,6 +57,7 @@ export default function PlayerPicker({ label, type, selected, onSelect, onClear 
         <p className="picker__label">{label}</p>
         <p className="picker__name">{selected.playerName}</p>
         {selected.detail && <p className="picker__detail">{selected.detail}</p>}
+        {children}
         <button type="button" className="picker__change" onClick={onClear}>
           다른 선수 고르기
         </button>
