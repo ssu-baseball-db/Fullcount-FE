@@ -11,6 +11,8 @@ import ComparePage from './pages/players/ComparePage.jsx';
 import TeamListPage from './pages/teams/TeamListPage.jsx';
 import TeamDetailPage from './pages/teams/TeamDetailPage.jsx';
 import LeadersPage from './pages/leaders/LeadersPage.jsx';
+import GameListPage from './pages/games/GameListPage.jsx';
+import GameDetailPage from './pages/games/GameDetailPage.jsx';
 
 // 다른 페이지로 이동하면 화면 맨 위부터 보이게 한다
 function ScrollToTop() {
@@ -49,9 +51,9 @@ export default function App() {
           {/* 기록 순위 */}
           <Route path="/leaders" element={<LeadersPage />} />
 
-          {/* 경기 (담당: 박은호) — 페이지를 만들면 ComingSoon 자리를 바꾸면 된다 */}
-          <Route path="/games" element={<ComingSoon title="경기" />} />
-          <Route path="/games/:gameId" element={<ComingSoon title="경기 상세" />} />
+          {/* 경기 (담당: 박은호) */}
+          <Route path="/games" element={<GameListPage />} />
+          <Route path="/games/:gameId" element={<GameDetailPage />} />
 
           {/* 예전 검색 주소로 들어오면 선수 찾기로 보낸다 */}
           <Route path="/search" element={<Navigate to="/players" replace />} />

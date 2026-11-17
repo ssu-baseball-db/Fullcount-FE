@@ -16,6 +16,8 @@ import {
   BATTING_COUNT_KEYS,
   PITCHING_COUNT_KEYS,
 } from './mockData.js';
+import { gamesOn, toGame, gameDetail, findSummary, generateSummary, gameEvents } from './gameMock.js';
+import { isValidDateString } from '../utils/date.js';
 
 // ---------- 공통 검증 ----------
 function parseSeason(value, { required = true } = {}) {
@@ -238,8 +240,24 @@ function comparePlayers(params) {
   return { type, season, playerA: compared(idA, a), playerB: compared(idB, b), metrics };
 }
 
+// ---------- 3.1 ~ 3.4 경기 (백엔드 GameController 와 같은 규칙) ----------
+function listGames(params) {
+  const { date, teamId } = params;
+  if (!date) throw new ApiError(400, '요청에 필요한 값과 형식을 확인해 주세요.');
+  if (!isValidDateString(date)) throw new ApiError(400, 'date 값의 형식이 올바르지 않습니다.');
+  // 백엔드는 시즌 범위·구단을 따로 검사하지 않고, 해당하는 경기가 없으면 빈 배열을 준다
+  return gamesOn(date)
+    .filter((game) => !teamId || game.homeTeam.teamId === teamId || game.awayTeam.teamId === teamId)
+    .map(toGame);
+}
+
 // ---------- 주소 → 처리 함수 연결 ----------
 const ROUTES = [
+  [/^\/api\/games$/, (_, params) => listGames(params)],
+  [/^\/api\/games\/([^/]+)$/, ([id]) => gameDetail(decodeURIComponent(id))],
+  [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => findSummary(decodeURIComponent(id))],
+  [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => generateSummary(decodeURIComponent(id)), 'POST'],
+  [/^\/api\/games\/([^/]+)\/events$/, ([id]) => gameEvents(decodeURIComponent(id))],
   [/^\/api\/players$/, (_, params) => searchPlayers(params)],
   [/^\/api\/players\/compare$/, (_, params) => comparePlayers(params)],
   [/^\/api\/players\/([^/]+)\/season-stats$/, ([id], params) => playerSeasonStats(decodeURIComponent(id), params)],
@@ -257,10 +275,11 @@ const ROUTES = [
   ],
 ];
 
-export function handleMockRequest(path, params) {
-  for (const [pattern, handler] of ROUTES) {
+// method: 'GET'(기본) 또는 'POST'. ROUTES 의 세 번째 값이 없으면 GET 으로 본다
+export function handleMockRequest(path, params, method = 'GET') {
+  for (const [pattern, handler, routeMethod = 'GET'] of ROUTES) {
     const match = path.match(pattern);
-    if (match) return copy(handler(match.slice(1), params));
+    if (match && routeMethod === method) return copy(handler(match.slice(1), params));
   }
-  throw new ApiError(404, `목업에 없는 API입니다: ${path}`);
+  throw new ApiError(404, `목업에 없는 API입니다: ${method} ${path}`);
 }
