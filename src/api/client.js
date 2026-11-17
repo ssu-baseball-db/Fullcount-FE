@@ -7,7 +7,7 @@
 // 백엔드 API가 준비되면 프로젝트 맨 위 폴더의 .env 파일에 VITE_USE_MOCK=false 를 넣으면 된다.
 // (.env 를 바꾼 뒤에는 npm run dev 를 다시 실행해야 적용된다)
 // ------------------------------------------------------------
-import { getToken } from '../auth/session.js';
+import { getCsrfToken } from '../auth/session.js';
 
 export const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'true') !== 'false';
 
@@ -65,8 +65,8 @@ export function sendJson(method, path, body) {
 
 async function requestJson(method, path, params, body) {
   const query = toQueryString(params);
-  // 로그인했다면 모든 요청에 'Authorization: Bearer 토큰' 헤더를 붙인다. 권한 확인은 백엔드가 한다.
-  const token = getToken();
+  // 값을 바꾸는 요청(POST·PATCH 등)에는 CSRF 토큰을 붙인다. 로그인 상태는 세션 쿠키로 전달되고 권한 확인은 백엔드가 한다.
+  const csrfToken = method === 'GET' ? null : getCsrfToken();
 
   if (USE_MOCK) {
     // 목업 코드는 목업 모드일 때만 불러온다 (실제 배포 파일에는 들어가지 않음)
@@ -74,18 +74,23 @@ async function requestJson(method, path, params, body) {
     await new Promise((resolve) => setTimeout(resolve, 200)); // 실제 네트워크처럼 약간 지연
     return handleMockRequest(path, Object.fromEntries(new URLSearchParams(query)), method, {
       body: body === undefined ? undefined : JSON.parse(JSON.stringify(body)),
-      token,
+      csrfToken,
     });
   }
 
   const url = query ? `${path}?${query}` : path;
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
 
   let response;
   try {
-    response = await fetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+    response = await fetch(url, {
+      method,
+      headers,
+      credentials: 'same-origin', // 세션 쿠키를 함께 보낸다
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
   } catch {
     throw new ApiError(0, '서버에 연결할 수 없습니다. 백엔드(8080)가 켜져 있는지 확인해 주세요.');
   }

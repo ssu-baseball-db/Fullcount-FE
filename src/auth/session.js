@@ -1,42 +1,43 @@
 // ------------------------------------------------------------
-// 로그인 정보 보관소. 브라우저 탭을 닫으면 지워지는 sessionStorage 에 저장한다.
-// 저장하는 값: { token, loginId, role }  (role: 'ADMIN' | 'USER')
+// 로그인 정보 보관소.
 //
-// 주의: 여기 저장된 role 은 화면에 메뉴를 보여줄지 정하는 용도일 뿐이다.
-// 실제 권한 확인은 백엔드가 요청마다 토큰으로 DB를 조회해서 한다.
+// 로그인 여부는 백엔드 세션 쿠키가 기준이다. 프론트가 보관하는 값은 두 가지뿐이다.
+//   - CSRF 토큰: /api/admin/session·login 응답으로 받아 메모리에만 둔다. POST·PATCH 요청 헤더에 붙인다.
+//   - 화면 표시용 아이디: 백엔드 세션 응답에 아이디가 없어서 로그인할 때 입력한 값을 sessionStorage 에 둔다.
+// 실제 권한 확인은 백엔드가 요청마다 세션과 CSRF 토큰으로 한다.
 // ------------------------------------------------------------
-const KEY = 'fullcount.session';
+const KEY = 'fullcount.adminName';
 
-export function loadSession() {
+let csrfToken = null;
+
+export function getCsrfToken() {
+  return csrfToken;
+}
+
+export function setCsrfToken(token) {
+  csrfToken = token;
+}
+
+export function loadAdminName() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(KEY));
-    return saved && saved.token ? saved : null;
+    return sessionStorage.getItem(KEY);
   } catch {
     return null;
   }
 }
 
-export function saveSession(session) {
+export function saveAdminName(name) {
   try {
-    sessionStorage.setItem(KEY, JSON.stringify(session));
+    sessionStorage.setItem(KEY, name);
   } catch {
-    // 저장할 수 없는 환경이면 이번 화면에서만 로그인 상태를 유지한다
+    // 저장할 수 없는 환경이면 표시용 이름만 기본값으로 보인다
   }
-  memory = session;
 }
 
-export function clearSession() {
+export function clearAdminName() {
   try {
     sessionStorage.removeItem(KEY);
   } catch {
     // 무시
   }
-  memory = null;
-}
-
-let memory = loadSession();
-
-// API 요청에 붙일 토큰 (client.js 에서 사용)
-export function getToken() {
-  return memory?.token ?? null;
 }

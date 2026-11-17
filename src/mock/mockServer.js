@@ -16,7 +16,7 @@ import {
   BATTING_COUNT_KEYS,
   PITCHING_COUNT_KEYS,
 } from './mockData.js';
-import { gamesOn, toGame, gameDetail, findSummary, generateSummary, gameEvents } from './gameMock.js';
+import { gamesOn, toGame, gameDetail, findSummary, generateSummary } from './gameMock.js';
 import { isValidDateString } from '../utils/date.js';
 import * as admin from './mockAdmin.js';
 
@@ -241,7 +241,7 @@ function comparePlayers(params) {
   return { type, season, playerA: compared(idA, a), playerB: compared(idB, b), metrics };
 }
 
-// ---------- 3.1 ~ 3.4 경기 (백엔드 GameController 와 같은 규칙) ----------
+// ---------- 3.1 ~ 3.3 경기 (백엔드 GameController 와 같은 규칙) ----------
 function listGames(params) {
   const { date, teamId } = params;
   if (!date) throw new ApiError(400, '요청에 필요한 값과 형식을 확인해 주세요.');
@@ -254,10 +254,10 @@ function listGames(params) {
 
 // ---------- 주소 → 처리 함수 연결 ----------
 const ROUTES = [
-  // 로그인 (백엔드에 제안한 형식)
-  [/^\/api\/auth\/login$/, (_, __, ctx) => admin.login(ctx.body), 'POST'],
-  [/^\/api\/auth\/me$/, (_, __, ctx) => admin.me(ctx)],
-  [/^\/api\/auth\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
+  // 관리자 로그인 (Fullcount-BE AdminSessionController)
+  [/^\/api\/admin\/session$/, () => admin.session()],
+  [/^\/api\/admin\/login$/, (_, __, ctx) => admin.login(ctx), 'POST'],
+  [/^\/api\/admin\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
   // 관리자 5.3, 5.4
   [/^\/api\/admin\/players$/, (_, __, ctx) => admin.createPlayer(ctx), 'POST'],
   [/^\/api\/admin\/players\/([^/]+)$/, ([id], __, ctx) => admin.updatePlayer(decodeURIComponent(id), ctx), 'PATCH'],
@@ -271,7 +271,6 @@ const ROUTES = [
   [/^\/api\/games\/([^/]+)$/, ([id]) => gameDetail(decodeURIComponent(id))],
   [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => findSummary(decodeURIComponent(id))],
   [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => generateSummary(decodeURIComponent(id)), 'POST'],
-  [/^\/api\/games\/([^/]+)\/events$/, ([id]) => gameEvents(decodeURIComponent(id))],
   [/^\/api\/players$/, (_, params) => searchPlayers(params)],
   [/^\/api\/players\/compare$/, (_, params) => comparePlayers(params)],
   [/^\/api\/players\/([^/]+)\/season-stats$/, ([id], params) => playerSeasonStats(decodeURIComponent(id), params)],
@@ -290,7 +289,7 @@ const ROUTES = [
 ];
 
 // method: 'GET'(기본), 'POST', 'PATCH'. ROUTES 의 세 번째 값이 없으면 GET 으로 본다
-// ctx: { body: 요청 본문, token: 로그인 토큰 }
+// ctx: { body: 요청 본문, csrfToken: X-CSRF-Token 헤더 값 }
 export function handleMockRequest(path, params, method = 'GET', ctx = {}) {
   for (const [pattern, handler, routeMethod = 'GET'] of ROUTES) {
     const match = path.match(pattern);

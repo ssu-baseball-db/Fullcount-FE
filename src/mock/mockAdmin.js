@@ -1,5 +1,5 @@
 // ------------------------------------------------------------
-// 목업: 로그인 API(백엔드에 제안한 형식)와 관리자 API(openapi.yaml 5.3, 5.4)
+// 목업: 관리자 로그인 API(/api/admin/session·login·logout)와 관리자 API(openapi.yaml 5.3, 5.4)
 // 검증 규칙과 오류 문구는 백엔드 AdminService 를 그대로 따른다.
 // 수정한 값은 목업 데이터에 바로 반영되어 선수 상세·기록 순위 화면에도 보인다. (새로고침하면 처음으로 돌아감)
 // ------------------------------------------------------------
@@ -14,43 +14,49 @@ import {
   PITCHING_COUNT_KEYS,
 } from './mockData.js';
 
-// ---------- 로그인 ----------
-// app_user 테이블을 흉내 낸 시험 계정
-const ACCOUNTS = [
-  { loginId: 'admin', password: 'admin1234', role: 'ADMIN' },
-  { loginId: 'fan', password: 'fan1234', role: 'USER' },
-];
-// login_session 테이블을 흉내 낸 토큰 → 계정
-const sessions = new Map();
+// ---------- 로그인 (백엔드 AdminSessionController·AdminAccess 흉내) ----------
+// 관리자 계정은 하나뿐이다. 세션 쿠키 대신 이 모듈의 변수에 로그인 상태와 CSRF 토큰을 둔다.
+const ACCOUNT = { username: 'admin', password: 'admin1234' };
+const mockSession = { loggedIn: false, csrfToken: null };
 
-export function login(body = {}) {
-  const account = ACCOUNTS.find((a) => a.loginId === body.loginId && a.password === body.password);
-  if (!account) throw new ApiError(401, '아이디 또는 비밀번호가 맞지 않습니다.');
-  const token = `mock-${account.loginId}-${Date.now()}`;
-  sessions.set(token, account);
-  return { token, loginId: account.loginId, role: account.role };
+function newCsrf() {
+  return `mock-csrf-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function accountOf(token) {
-  return token ? sessions.get(token) : undefined;
+export function session() {
+  if (!mockSession.csrfToken) mockSession.csrfToken = newCsrf();
+  return { authenticated: mockSession.loggedIn, csrfToken: mockSession.csrfToken };
 }
 
-export function me(ctx) {
-  const account = accountOf(ctx.token);
-  if (!account) throw new ApiError(401, '로그인이 필요합니다.');
-  return { loginId: account.loginId, role: account.role };
+function requireCsrf(ctx) {
+  if (!mockSession.csrfToken || ctx.csrfToken !== mockSession.csrfToken) {
+    throw new ApiError(403, '요청 검증에 실패했습니다. 페이지를 다시 열어 주세요.');
+  }
+}
+
+export function login(ctx) {
+  requireCsrf(ctx);
+  const body = ctx.body ?? {};
+  if (body.username !== ACCOUNT.username || body.password !== ACCOUNT.password) {
+    throw new ApiError(401, '관리자 계정 정보를 확인해 주세요.');
+  }
+  mockSession.loggedIn = true;
+  mockSession.csrfToken = newCsrf();
+  return session();
 }
 
 export function logout(ctx) {
-  sessions.delete(ctx.token);
+  if (!mockSession.loggedIn) throw new ApiError(401, '관리자 로그인이 필요합니다.');
+  requireCsrf(ctx);
+  mockSession.loggedIn = false;
+  mockSession.csrfToken = null;
   return null;
 }
 
-// 관리자 API 공통: 토큰으로 계정을 찾고 role 이 ADMIN 인지 확인 (백엔드는 DB 조회로 같은 일을 한다)
+// 관리자 API 공통 (백엔드 AdminAccess.requireWrite 와 같은 순서로 확인)
 function requireAdmin(ctx) {
-  const account = accountOf(ctx.token);
-  if (!account) throw new ApiError(401, '로그인이 필요합니다.');
-  if (account.role !== 'ADMIN') throw new ApiError(403, '관리자 접근 권한이 필요합니다.');
+  if (!mockSession.loggedIn) throw new ApiError(403, '관리자 접근 권한이 필요합니다.');
+  requireCsrf(ctx);
 }
 
 // ---------- 선수 등록·수정 (AdminService.playerValues 와 같은 검증) ----------

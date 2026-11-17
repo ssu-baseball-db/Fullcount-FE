@@ -1,52 +1,42 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import * as authApi from '../api/authApi.js';
-import { loadSession, saveSession, clearSession } from './session.js';
+import { loadAdminName, saveAdminName, clearAdminName } from './session.js';
 
 const AuthContext = createContext(null);
 
+const DEFAULT_NAME = '관리자';
+
 /**
  * 로그인 상태를 앱 전체에 나눠 주는 컴포넌트. main.jsx 에서 <App /> 을 감싼다.
- * 어느 화면에서든 const { user, isAdmin, login, logout } = useAuth(); 로 꺼내 쓴다.
+ * 어느 화면에서든 const { user, isAdmin, ready, login, logout } = useAuth(); 로 꺼내 쓴다.
+ *
+ * 로그인 계정은 백엔드 관리자 계정 하나뿐이다. 로그인 상태는 백엔드 세션 쿠키로 판단한다.
  */
 export function AuthProvider({ children }) {
-  // user: { loginId, role } 또는 null(로그인 안 함)
-  const [user, setUser] = useState(() => {
-    const saved = loadSession();
-    return saved ? { loginId: saved.loginId, role: saved.role } : null;
-  });
+  // user: { loginId } 또는 null(로그인 안 함)
+  const [user, setUser] = useState(null);
+  // ready: 처음 세션 확인이 끝났는지. 끝나기 전에는 관리자 화면에서 로그인 화면으로 보내지 않는다
+  const [ready, setReady] = useState(false);
 
-  // 새로고침하면 저장된 토큰이 아직 유효한지 백엔드에 다시 물어본다 (권한이 바뀌었을 수도 있으므로)
+  // 화면을 열거나 새로고침하면 백엔드 세션이 아직 살아 있는지 확인한다
   useEffect(() => {
-    const saved = loadSession();
-    if (!saved || saved.tokenOnly) return;
     authApi
-      .fetchMe()
-      .then((me) => {
-        saveSession({ ...saved, loginId: me.loginId, role: me.role });
-        setUser({ loginId: me.loginId, role: me.role });
+      .fetchSession()
+      .then((session) => {
+        if (session?.authenticated) setUser({ loginId: loadAdminName() || DEFAULT_NAME });
+        else clearAdminName();
       })
-      .catch((error) => {
-        // 401: 토큰 만료 → 로그아웃 처리. 그 밖의 오류(서버 꺼짐 등)는 저장된 상태를 유지
-        if (error.status === 401) {
-          clearSession();
-          setUser(null);
-        }
-      });
+      .catch(() => {
+        // 서버가 꺼져 있으면 로그인 안 한 상태로 둔다
+      })
+      .finally(() => setReady(true));
   }, []);
 
-  // 아이디·비밀번호로 로그인
-  async function login(loginId, password) {
-    const result = await authApi.login(loginId, password);
-    saveSession({ token: result.token, loginId: result.loginId, role: result.role });
-    setUser({ loginId: result.loginId, role: result.role });
+  async function login(username, password) {
+    const result = await authApi.login(username, password);
+    saveAdminName(username);
+    setUser({ loginId: username });
     return result;
-  }
-
-  // (임시) 백엔드에 로그인 API가 아직 없을 때, 관리자 토큰을 직접 넣어 접속
-  // 권한은 관리자 API를 호출할 때 백엔드가 확인하므로 틀린 토큰이면 403 이 난다.
-  function loginWithToken(token) {
-    saveSession({ token, loginId: '관리자(임시 토큰)', role: 'ADMIN', tokenOnly: true });
-    setUser({ loginId: '관리자(임시 토큰)', role: 'ADMIN' });
   }
 
   async function logout() {
@@ -55,11 +45,11 @@ export function AuthProvider({ children }) {
     } catch {
       // 로그아웃 API가 실패해도 화면에서는 로그아웃시킨다
     }
-    clearSession();
+    clearAdminName();
     setUser(null);
   }
 
-  const value = { user, isAdmin: user?.role === 'ADMIN', login, loginWithToken, logout };
+  const value = { user, isAdmin: Boolean(user), ready, login, logout };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

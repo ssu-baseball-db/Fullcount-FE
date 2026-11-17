@@ -1,5 +1,5 @@
 // ------------------------------------------------------------
-// 경기 API (업무 기능도 3.1 경기 목록, 3.2 경기 상세, 3.3 주요 이슈 요약, 3.4 이벤트)
+// 경기 API (업무 기능도 3.1 경기 목록, 3.2 경기 상세, 3.3 주요 이슈 요약)
 // 백엔드 명세: Fullcount-BE 의 src/main/resources/static/openapi.yaml (태그 '경기 기록')
 //
 // 백엔드 응답을 화면에서 쓰기 편한 모양으로 바꿔서(normalize) 돌려준다.
@@ -108,14 +108,6 @@ export async function fetchGameSummary(gameId) {
  */
 export function createGameSummary(gameId) {
   return postJson(`/api/games/${encodeURIComponent(gameId)}/summary`);
-}
-
-/**
- * 3.4 경기 이벤트 (득점 장면 등)
- * GET /api/games/{gameId}/events → [{ sequence, inning, half: 'T' | 'B', description }]
- */
-export function fetchGameEvents(gameId) {
-  return getJson(`/api/games/${encodeURIComponent(gameId)}/events`);
 }
 
 /**
