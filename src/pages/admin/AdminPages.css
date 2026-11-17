@@ -1,0 +1,205 @@
+/* ---------- 관리자·로그인 화면 공통 ---------- */
+.admin-body {
+  max-width: 960px;
+}
+
+.admin-back {
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+}
+
+/* 관리 첫 화면 메뉴 */
+.admin-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-menu__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.admin-menu__item:hover {
+  border-color: var(--board);
+}
+
+.admin-menu__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.admin-menu__desc {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  word-break: keep-all;
+}
+
+.admin-menu__api {
+  margin-top: auto;
+  padding-top: 10px;
+  color: var(--board);
+  font-size: 0.8125rem;
+  word-break: break-all;
+}
+
+@media (max-width: 720px) {
+  .admin-menu {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 입력칸 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field__label {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.field__required {
+  color: #a00d25;
+}
+
+.field input,
+.field select {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--board);
+  box-shadow: 0 0 0 3px rgba(30, 59, 48, 0.15);
+}
+
+/* 원래 값과 달라진 칸 */
+.field.is-changed input,
+.field.is-changed select {
+  border-color: var(--bulb);
+  background: #fff8e1;
+}
+
+.field__hint,
+.field__was {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.field__was {
+  color: #8a6a00;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-hint {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  word-break: keep-all;
+}
+
+.form-hint code {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--soft);
+  font-size: 0.8125rem;
+}
+
+.form-message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  word-break: keep-all;
+}
+
+.form-message.is-error {
+  border: 1px solid #d9a59a;
+  background: #fbf0ec;
+  color: #8a2f1d;
+}
+
+.form-message.is-success {
+  margin: 0 0 16px;
+  border: 1px solid #9cc2ae;
+  background: #edf6f0;
+  color: #1e4d38;
+}
+
+.card .form-message.is-success {
+  margin: 16px 0 0;
+}
+
+.record-now {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 500;
+}
+
+/* 로그인 */
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+}
+
+.auth-card .form-message {
+  margin: 0;
+}
+
+.auth-card__submit {
+  height: 44px;
+}
+
+.auth-card--temp {
+  margin-top: 16px;
+  border-style: dashed;
+}
+
+.auth-card p {
+  margin: 0;
+}
+
+/* 휴대폰에서는 입력칸을 두 칸씩 */
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}

@@ -7,7 +7,7 @@ import './PlayerPicker.css';
 /**
  * 이름으로 검색해서 선수 한 명을 고르는 입력창 (선수 비교 화면에서 사용)
  *
- * type     : 'batter' | 'pitcher' — 이 유형의 선수만 목록에 보여준다
+ * type     : 'batter' | 'pitcher' — 이 유형의 선수만 목록에 보여준다, 'all' — 모두 (관리자 화면)
  * selected : 고른 선수 { playerId, playerName, detail } 또는 null
  * onSelect : 선수를 고르면 { playerId, playerName } 로 호출
  * onClear  : '다른 선수 고르기'를 누르면 호출
@@ -35,7 +35,7 @@ export default function PlayerPicker({ label, type, selected, onSelect, onClear,
       searchPlayers(name)
         .then((rows) => {
           if (ignore) return;
-          setResults(groupBySeasonPlayer(rows).filter((p) => p.type === type).slice(0, 8));
+          setResults(groupBySeasonPlayer(rows).filter((p) => type === 'all' || p.type === type).slice(0, 8));
           setStatus('done');
         })
         .catch((err) => {
@@ -73,7 +73,7 @@ export default function PlayerPicker({ label, type, selected, onSelect, onClear,
       <input
         id={inputId}
         type="search"
-        placeholder={type === 'pitcher' ? '투수 이름 검색' : '타자 이름 검색'}
+        placeholder={type === 'all' ? '선수 이름 검색' : type === 'pitcher' ? '투수 이름 검색' : '타자 이름 검색'}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         autoComplete="off"
@@ -83,7 +83,7 @@ export default function PlayerPicker({ label, type, selected, onSelect, onClear,
       {status === 'error' && <p className="picker__hint is-error">{errorText(error)}</p>}
       {status === 'done' && results.length === 0 && (
         <p className="picker__hint">
-          ‘{query.trim()}’ 이름의 {type === 'pitcher' ? '투수' : '타자'}가 없습니다.
+          ‘{query.trim()}’ 이름의 {type === 'all' ? '선수' : type === 'pitcher' ? '투수' : '타자'}가 없습니다.
         </p>
       )}
 
@@ -98,6 +98,7 @@ export default function PlayerPicker({ label, type, selected, onSelect, onClear,
                   <span className="picker__result-sub">
                     {last.teamName} {formatYears(last.from, last.to)}, {formatPosition(player.latest.position)}
                     {player.birthDate && `, ${player.birthDate.slice(0, 4)}년생`}
+                    {type === 'all' && `, ID ${player.playerId}`}
                   </span>
                 </button>
               </li>
