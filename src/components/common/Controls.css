@@ -1,0 +1,74 @@
+.control {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control__label {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.control select {
+  min-width: 112px;
+  height: 40px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2363543f'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  appearance: none;
+  cursor: pointer;
+}
+
+.control select:hover {
+  border-color: var(--muted);
+}
+
+/* 타자/투수 버튼 묶음 */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--soft);
+  border-radius: var(--radius);
+}
+
+.segmented button {
+  padding: 7px 18px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button.is-active {
+  background: var(--board);
+  color: var(--chalk);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--board);
+}
+
+.toggle.is-disabled {
+  color: var(--muted);
+  cursor: default;
+}

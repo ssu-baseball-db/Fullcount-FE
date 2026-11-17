@@ -1,0 +1,110 @@
+.picker {
+  min-width: 0;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.picker__label {
+  display: block;
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.picker input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.picker input:focus {
+  outline: none;
+  border-color: var(--board);
+  box-shadow: 0 0 0 3px rgba(30, 59, 48, 0.15);
+}
+
+.picker__hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.picker__hint.is-error {
+  color: #8a2f1d;
+}
+
+.picker__results {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.picker__results li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.picker__results button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker__results button:hover,
+.picker__results button:focus-visible {
+  background: #f4ecdc;
+}
+
+.picker__result-name {
+  font-weight: 700;
+}
+
+.picker__result-sub {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+/* 선수를 고른 뒤 */
+.picker--selected {
+  border-color: var(--board);
+  border-width: 2px;
+}
+
+.picker__name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.picker__detail {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.picker__change {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--board);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

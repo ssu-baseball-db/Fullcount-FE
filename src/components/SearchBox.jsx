@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import './SearchBox.css';
 
 /**
- * 선수·팀 검색창. 검색하면 /search?q=검색어 로 이동한다.
- * size: 'large'(메인 화면) | 'small'(헤더)
+ * 선수·팀 검색창. 검색하면 선수 찾기 페이지(/players?name=검색어)로 이동한다.
+ * size: 'large'(메인 화면·선수 찾기) | 'small'(헤더)
  */
-export default function SearchBox({ size = 'large' }) {
-  const [keyword, setKeyword] = useState('');
+export default function SearchBox({ size = 'large', initialValue = '', placeholder = '선수 이름이나 팀 이름' }) {
+  const [keyword, setKeyword] = useState(initialValue);
   const navigate = useNavigate();
 
   function handleSubmit(event) {
     event.preventDefault(); // 폼 기본 동작(새로고침) 막기
     const trimmed = keyword.trim();
     if (!trimmed) return;
-    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+    navigate(`/players?name=${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -25,7 +25,7 @@ export default function SearchBox({ size = 'large' }) {
       <input
         id={`search-${size}`}
         type="search"
-        placeholder="선수 이름이나 팀 이름"
+        placeholder={placeholder}
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         autoComplete="off"

@@ -1,0 +1,17 @@
+.status {
+  margin: 0;
+  padding: 40px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-align: center;
+  word-break: keep-all;
+}
+
+.status--error {
+  border-style: solid;
+  border-color: #d9a59a;
+  background: #fbf0ec;
+  color: #8a2f1d;
+}

@@ -5,6 +5,7 @@ import './Header.css';
 
 const MENU = [
   { to: '/players', label: '선수' },
+  { to: '/compare', label: '선수 비교' },
   { to: '/teams', label: '팀' },
   { to: '/leaders', label: '기록 순위' },
   { to: '/games', label: '경기' },
@@ -12,7 +13,8 @@ const MENU = [
 
 export default function Header() {
   const { pathname } = useLocation();
-  const isMain = pathname === '/';
+  // 메인과 선수 찾기 화면에는 큰 검색창이 따로 있으니 헤더 검색창은 숨긴다
+  const hideSearch = pathname === '/' || pathname === '/players';
 
   return (
     <header className="site-header">
@@ -34,8 +36,7 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* 메인 화면에는 큰 검색창이 따로 있으니 헤더 검색창은 숨긴다 */}
-        {!isMain && (
+        {!hideSearch && (
           <div className="site-header__search">
             <SearchBox size="small" />
           </div>

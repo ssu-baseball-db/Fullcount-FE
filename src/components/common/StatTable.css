@@ -1,0 +1,113 @@
+/* 표가 화면보다 넓으면 가로로 스크롤 */
+.stat-table__scroll {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.stat-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-table th,
+.stat-table td {
+  padding: 0 12px;
+  height: 42px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--rule);
+}
+
+.stat-table thead th {
+  height: 44px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-bottom: 2px solid var(--board);
+}
+
+.stat-table thead th button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.stat-table thead th button:hover {
+  color: var(--ink);
+}
+
+.stat-table__arrow {
+  font-size: 0.6875rem;
+  opacity: 0.5;
+}
+
+.stat-table .is-left {
+  text-align: left;
+}
+
+/* 이름 열은 가로로 스크롤해도 왼쪽에 붙어 있게 */
+.stat-table .is-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--rule);
+}
+
+.stat-table tbody tr:hover td {
+  background: #f8f1e4;
+}
+
+/* 현재 정렬 기준 열 강조 */
+.stat-table th.is-sorted {
+  color: var(--board);
+  font-weight: 700;
+}
+
+.stat-table th.is-sorted .stat-table__arrow {
+  opacity: 1;
+}
+
+.stat-table td.is-sorted {
+  background: #f4ecdc;
+  font-weight: 700;
+}
+
+.stat-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* 합계·통산 행 */
+.stat-table tfoot td {
+  border-top: 2px solid var(--board);
+  border-bottom: 0;
+  background: #f4ecdc;
+  font-weight: 700;
+}
+
+.stat-table a {
+  font-weight: 500;
+}
+
+.stat-table a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.stat-table .stat-table__sub {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}

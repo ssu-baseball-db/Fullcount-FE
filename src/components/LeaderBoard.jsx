@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useApi from '../hooks/useApi.js';
 import { fetchLeaders } from '../api/mainApi.js';
-import { STAT_LABELS, STAT_UNITS, LEADER_TYPES } from '../constants/stats.js';
+import { CATEGORY_LABELS, STAT_UNITS, LEADER_TYPES } from '../constants/stats.js';
 import { formatStat } from '../utils/format.js';
 import './LeaderBoard.css';
 
@@ -40,7 +40,7 @@ export default function LeaderBoard({ year }) {
       {!error && groups && (
         <div className={`leaders__grid ${loading ? 'is-loading' : ''}`} role="tabpanel">
           {groups.map((group) => (
-            <LeaderList key={group.category} year={year} {...group} />
+            <LeaderList key={group.category} year={year} type={type} {...group} />
           ))}
         </div>
       )}
@@ -49,7 +49,8 @@ export default function LeaderBoard({ year }) {
 }
 
 // 한 부문(예: 홈런)의 1~5위 목록
-function LeaderList({ year, category, players }) {
+function LeaderList({ year, type, category, players }) {
+  const playerType = type === 'pitching' ? 'pitcher' : 'batter';
   const [first, ...rest] = players;
   const unit = STAT_UNITS[category] ?? '';
 
@@ -58,14 +59,14 @@ function LeaderList({ year, category, players }) {
   return (
     <article className="leader-list">
       <header className="leader-list__head">
-        <h3>{STAT_LABELS[category] ?? category}</h3>
-        <Link to={`/leaders?year=${year}&category=${category}`} className="leader-list__more">
+        <h3>{CATEGORY_LABELS[category] ?? category}</h3>
+        <Link to={`/leaders?year=${year}&type=${type}&category=${category}`} className="leader-list__more">
           전체 순위
         </Link>
       </header>
 
       {/* 1위는 크게 */}
-      <Link to={`/players/${first.playerId}`} className="leader-list__first">
+      <Link to={`/players/${first.playerId}?type=${playerType}`} className="leader-list__first">
         <span className="leader-list__first-name">{first.playerName}</span>
         <span className="leader-list__team">{first.teamName}</span>
         <span className="leader-list__first-value num">
@@ -79,7 +80,7 @@ function LeaderList({ year, category, players }) {
         {rest.map((player) => (
           <li key={player.playerId}>
             <span className="leader-list__rank num">{player.rank}</span>
-            <Link to={`/players/${player.playerId}`} className="leader-list__name">
+            <Link to={`/players/${player.playerId}?type=${playerType}`} className="leader-list__name">
               {player.playerName}
             </Link>
             <span className="leader-list__team">{player.teamName}</span>
