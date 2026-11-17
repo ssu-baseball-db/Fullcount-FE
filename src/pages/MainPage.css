@@ -1,0 +1,109 @@
+/* 화면 위쪽 전광판 영역 */
+.hero {
+  background: var(--board);
+  color: var(--chalk);
+  padding: 56px 0 48px;
+}
+
+.hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 56px;
+  align-items: start;
+}
+
+.hero__intro h1 {
+  margin: 0 0 12px;
+  font-size: 2.25rem;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.hero__intro > p {
+  margin: 0 0 28px;
+  max-width: 34em;
+  color: var(--board-dim);
+  word-break: keep-all;
+}
+
+.hero__season {
+  margin-top: 40px;
+}
+
+.hero__season-label {
+  margin: 0 0 10px;
+  color: var(--board-dim);
+  font-size: 0.875rem;
+}
+
+/* 오른쪽 순위표 */
+.hero__board {
+  padding: 20px 20px 12px;
+  background: #18332a;
+  border: 1px solid var(--board-line);
+  border-radius: var(--radius);
+}
+
+.hero__board-head {
+  display: flex;
+  flex-wrap: wrap; /* 좁은 화면에서는 기준일·범례가 제목 아래 줄로 내려간다 */
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 0 10px 12px;
+}
+
+.hero__board-head h2 {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.hero__mock {
+  padding: 2px 8px;
+  border: 1px solid var(--board-line);
+  border-radius: 3px;
+  color: var(--board-dim);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .hero__inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 36px 0 32px;
+  }
+
+  .hero__intro h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero__board {
+    padding: 14px 8px 8px;
+  }
+
+  .hero__board-head {
+    padding: 0 6px 10px;
+  }
+}
+
+.hero__board-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--board-dim);
+  font-size: 0.8125rem;
+}
+
+.hero__board-meta > span {
+  white-space: nowrap;
+}

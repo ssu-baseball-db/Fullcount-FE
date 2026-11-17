@@ -1,0 +1,90 @@
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  height: 64px;
+}
+
+/* 로고: 야구공 그림 + '풀카운트' */
+.site-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--board);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.site-header__logo svg {
+  flex-shrink: 0;
+  color: var(--board);
+}
+
+.site-header__nav {
+  display: flex;
+  gap: 28px;
+}
+
+.site-header__nav a {
+  position: relative;
+  padding: 20px 0;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.site-header__nav a:hover {
+  color: var(--ink);
+}
+
+.site-header__nav a.is-active {
+  color: var(--ink);
+}
+
+.site-header__nav a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--board);
+}
+
+.site-header__search {
+  margin-left: auto;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 760px) {
+  .site-header__inner {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 0 24px;
+    padding-top: 14px;
+  }
+
+  .site-header__nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    gap: 22px;
+  }
+
+  .site-header__nav a {
+    padding: 12px 0;
+  }
+
+  .site-header__search {
+    flex: 1;
+  }
+}

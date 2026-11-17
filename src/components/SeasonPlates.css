@@ -1,0 +1,95 @@
+.season-plates {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.season-plates__digits {
+  display: flex;
+  gap: 6px;
+  perspective: 400px;
+}
+
+/* 숫자판 한 장 */
+.season-plates__plate {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 76px;
+  background: #142a22;
+  border: 1px solid var(--board-line);
+  border-radius: 3px;
+  color: var(--chalk);
+  font-family: var(--font-number);
+  font-size: 3.25rem;
+  font-weight: 600;
+  line-height: 1;
+  /* 판 가운데를 가로지르는 이음새 */
+  background-image: linear-gradient(to bottom, transparent 49%, rgba(0, 0, 0, 0.45) 49%, rgba(0, 0, 0, 0.45) 51%, transparent 51%);
+  animation: plate-flip 380ms ease-out both;
+  transform-origin: top center;
+}
+
+/* 연도가 바뀔 때 숫자판이 위에서 걸리듯 내려오는 효과 (이 화면의 유일한 움직임) */
+@keyframes plate-flip {
+  from {
+    transform: rotateX(-80deg);
+    opacity: 0.2;
+  }
+  to {
+    transform: rotateX(0);
+    opacity: 1;
+  }
+}
+
+.season-plates__arrow {
+  width: 36px;
+  height: 76px;
+  border: 1px solid var(--board-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--chalk);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.season-plates__arrow:hover:not(:disabled) {
+  background: var(--board-line);
+}
+
+.season-plates__arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.season-plates__select {
+  flex-basis: 100%;
+}
+
+.season-plates__select select {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--board-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--board-dim);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.season-plates__select option {
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .season-plates__plate {
+    width: 44px;
+    height: 62px;
+    font-size: 2.6rem;
+  }
+
+  .season-plates__arrow {
+    height: 62px;
+  }
+}
