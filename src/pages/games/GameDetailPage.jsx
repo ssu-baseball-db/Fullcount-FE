@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi.js';
-import { createGameSummary, fetchGameDetail, fetchGameEvents, fetchGameSummary, parseSummary } from '../../api/gameApi.js';
+import { createGameSummary, fetchGameDetail, fetchGameSummary, parseSummary } from '../../api/gameApi.js';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import StatTable from '../../components/common/StatTable.jsx';
 import StatusMessage from '../../components/common/StatusMessage.jsx';
@@ -14,11 +14,10 @@ import TeamBadge from './TeamBadge.jsx';
 import './GamePages.css';
 
 const sumOf = (rows, key) => rows.reduce((total, row) => total + (row[key] ?? 0), 0);
-const halfText = (half) => (half === 'T' ? '초' : '말');
 
 /**
  * 경기 상세 페이지  /games/{gameId}?side=away|home
- * 사용 API: GET /api/games/{gameId} (3.2), GET·POST /api/games/{gameId}/summary (3.3), GET /api/games/{gameId}/events (3.4)
+ * 사용 API: GET /api/games/{gameId} (3.2), GET·POST /api/games/{gameId}/summary (3.3)
  */
 export default function GameDetailPage() {
   const { gameId } = useParams();
@@ -28,9 +27,8 @@ export default function GameDetailPage() {
   const [detailVersion, setDetailVersion] = useState(0);
   const { data: game, loading, error } = useApi(() => fetchGameDetail(gameId), [gameId, detailVersion]);
   const completed = game?.status === 'COMPLETED';
-  // 요약·이벤트는 종료 경기일 때만 부른다. 실패해도 경기 상세는 그대로 보여준다
+  // 요약은 종료 경기일 때만 부른다. 실패해도 경기 상세는 그대로 보여준다
   const summary = useApi(() => fetchGameSummary(gameId), [gameId], { enabled: completed });
-  const events = useApi(() => fetchGameEvents(gameId), [gameId, detailVersion], { enabled: completed });
 
   if (!game) {
     return (
@@ -86,16 +84,6 @@ export default function GameDetailPage() {
             </div>
             <SummaryCard key={gameId} gameId={game.gameId} loaded={summary}
               onCreated={() => setDetailVersion((version) => version + 1)} />
-          </section>
-        )}
-
-        {completed && events.data?.length > 0 && (
-          <section className="section" aria-labelledby="events-title">
-            <div className="section__head">
-              <h2 id="events-title">주요 장면</h2>
-              <p className="section__note">이닝 순서대로 모았습니다. 결승점이 난 이닝은 강조해서 보여 줍니다.</p>
-            </div>
-            <EventList game={game} events={events.data} />
           </section>
         )}
 
@@ -302,51 +290,6 @@ function SummaryCard({ gameId, loaded, onCreated }) {
         경기 기록을 바탕으로 만든 요약입니다. 저장 시각 {saved.generatedAt?.replace('T', ' ').replace('Z', '')}
       </p>
     </article>
-  );
-}
-
-// 이긴 팀이 마지막으로 앞서기 시작한 이닝(결승점 이닝)을 이닝별 점수로 찾는다
-function decisiveHalf(game) {
-  const { lineScore, awayScore, homeScore } = game;
-  if (!lineScore || awayScore === homeScore) return null;
-  const winner = awayScore > homeScore ? 'away' : 'home';
-  const score = { away: 0, home: 0 };
-  let found = null;
-  for (let i = 0; i < lineScore.innings; i += 1) {
-    for (const s of ['away', 'home']) {
-      const runs = lineScore[s][i] ?? 0;
-      const other = s === 'away' ? 'home' : 'away';
-      const before = score[s] <= score[other];
-      score[s] += runs;
-      if (s === winner && runs > 0 && before && score[s] > score[other]) found = { inning: i + 1, half: s === 'away' ? 'T' : 'B' };
-    }
-  }
-  return found;
-}
-
-// 이벤트 목록 (3.4 이벤트를 이닝 순서로). 초 공격은 원정, 말 공격은 홈 팀 색
-function EventList({ game, events }) {
-  const decisive = decisiveHalf(game);
-  return (
-    <ol className="plays">
-      {events.map((event) => {
-        const away = event.half === 'T';
-        const teamId = away ? game.awayTeamId : game.homeTeamId;
-        const isDecisive = decisive && decisive.inning === event.inning && decisive.half === event.half;
-        return (
-          <li key={event.sequence} className={`plays__item${isDecisive ? ' is-important' : ''}`} style={{ '--team': teamColor(teamId) }}>
-            <span className="plays__inning num">
-              {event.inning}회{halfText(event.half)}
-            </span>
-            <p className="plays__text">
-              <TeamBadge teamId={teamId} name={away ? game.awayTeamName : game.homeTeamName} size="small" />
-              <span>{event.description}</span>
-              {isDecisive && <span className="play-tag play-tag--game_winning">결승점 이닝</span>}
-            </p>
-          </li>
-        );
-      })}
-    </ol>
   );
 }
 

@@ -16,7 +16,7 @@ import {
   BATTING_COUNT_KEYS,
   PITCHING_COUNT_KEYS,
 } from './mockData.js';
-import { gamesOn, toGame, gameDetail, findSummary, generateSummary, gameEvents } from './gameMock.js';
+import { gamesOn, toGame, gameDetail, findSummary, generateSummary } from './gameMock.js';
 import { isValidDateString } from '../utils/date.js';
 import * as admin from './mockAdmin.js';
 
@@ -241,7 +241,7 @@ function comparePlayers(params) {
   return { type, season, playerA: compared(idA, a), playerB: compared(idB, b), metrics };
 }
 
-// ---------- 3.1 ~ 3.4 경기 (백엔드 GameController 와 같은 규칙) ----------
+// ---------- 3.1 ~ 3.3 경기 (백엔드 GameController 와 같은 규칙) ----------
 function listGames(params) {
   const { date, teamId } = params;
   if (!date) throw new ApiError(400, '요청에 필요한 값과 형식을 확인해 주세요.');
@@ -271,7 +271,6 @@ const ROUTES = [
   [/^\/api\/games\/([^/]+)$/, ([id]) => gameDetail(decodeURIComponent(id))],
   [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => findSummary(decodeURIComponent(id))],
   [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => generateSummary(decodeURIComponent(id)), 'POST'],
-  [/^\/api\/games\/([^/]+)\/events$/, ([id]) => gameEvents(decodeURIComponent(id))],
   [/^\/api\/players$/, (_, params) => searchPlayers(params)],
   [/^\/api\/players\/compare$/, (_, params) => comparePlayers(params)],
   [/^\/api\/players\/([^/]+)\/season-stats$/, ([id], params) => playerSeasonStats(decodeURIComponent(id), params)],

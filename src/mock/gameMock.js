@@ -4,12 +4,11 @@
 // 날짜를 받으면 그날 경기를 "그 자리에서" 만든다. 날짜·경기 ID를 씨앗(seed)으로 쓰기 때문에
 // 같은 날짜는 언제 불러도 같은 경기가 나온다. 선수는 mockData.js 의 그 시즌·그 구단 선수를 쓴다.
 //
-// 응답 형식은 백엔드(Fullcount-BE) openapi.yaml 의 Game / GameDetail / GameSummary / GameEvent 와 같다.
+// 응답 형식은 백엔드(Fullcount-BE) openapi.yaml 의 Game / GameDetail / GameSummary 와 같다.
 //   GET  /api/games?date=&teamId=      → Game[]
 //   GET  /api/games/{gameId}           → GameDetail (inningScores, battingStats, pitchingStats)
 //   GET  /api/games/{gameId}/summary   → GameSummary (저장된 요약이 없으면 404)
 //   POST /api/games/{gameId}/summary   → 저장된 요약이 있으면 그대로, 없으면 만들어 저장 (상세 기록이 없으면 409)
-//   GET  /api/games/{gameId}/events    → GameEvent[]
 //
 // 만드는 순서: 이닝별 득점 → 득점 장면(누가 어떻게 점수를 냈나) → 타자·투수 기록 → 승패 투수 → AI 요약
 // 득점 장면에서 타자 기록(타점·홈런)과 결승타·승리투수를 계산하므로 서로 어긋나지 않는다.
@@ -541,7 +540,6 @@ function makeGame(dateStr, awayTeamId, homeTeamId) {
     inningScores: [],
     battingStats: [],
     pitchingStats: [],
-    events: [],
     summaryText: null,
   };
 
@@ -597,14 +595,6 @@ function makeGame(dateStr, awayTeamId, homeTeamId) {
   const bySideThenId = (a, b) => a.teamSide.localeCompare(b.teamSide) || a.playerId.localeCompare(b.playerId);
   game.battingStats = [...batting.away, ...batting.home].sort(bySideThenId);
   game.pitchingStats = [...strip(pitching.away), ...strip(pitching.home)].sort(bySideThenId);
-
-  // openapi GameEvent: 득점 장면을 이벤트로 저장
-  game.events = list.map((p, index) => ({
-    sequence: index + 1,
-    inning: p.inning,
-    half: p.side === 'away' ? 'T' : 'B',
-    description: `${p.batter.playerName} ${describePlay(p)} (${game.awayTeam.teamName} ${p.after.away} : ${p.after.home} ${game.homeTeam.teamName})`,
-  }));
 
   // 7) 요약: 약 70%는 미리 저장된 상태, 나머지는 화면에서 '요약 만들기'를 누르면 생성
   const text = makeSummaryText(game, list, goAhead);
@@ -674,9 +664,4 @@ export function generateSummary(gameId) {
   const saved = { gameId, summary: game.summaryText, generatedAt: new Date().toISOString().slice(0, 19) + 'Z' };
   savedSummaries.set(gameId, saved);
   return saved;
-}
-
-// GET /api/games/{gameId}/events → openapi GameEvent[]
-export function gameEvents(gameId) {
-  return gameById(gameId).events;
 }

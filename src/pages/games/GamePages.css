@@ -505,105 +505,6 @@
   font-size: 0.9375rem;
 }
 
-/* ---------- 상세: 득점 장면 ---------- */
-.plays {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.plays__item {
-  display: grid;
-  grid-template-columns: 4em 1fr;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px 12px 14px;
-  border-bottom: 1px solid var(--rule);
-  border-left: 4px solid var(--team);
-}
-
-.plays__item:last-child {
-  border-bottom: 0;
-}
-
-.plays__item.is-important {
-  background: color-mix(in srgb, var(--team) 7%, var(--surface));
-}
-
-.plays__inning {
-  color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.plays__body {
-  min-width: 0;
-}
-
-.plays__text {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  margin: 0;
-  word-break: keep-all;
-}
-
-.plays__batter {
-  font-weight: 700;
-}
-
-.plays__batter:hover {
-  text-decoration: underline;
-}
-
-.plays__tags {
-  display: flex;
-  gap: 6px;
-  margin: 6px 0 0;
-}
-
-.play-tag {
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--soft);
-  color: var(--ink);
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.7;
-}
-
-.play-tag--walk_off {
-  background: #8a2f1d;
-  color: #fff;
-}
-
-.play-tag--game_winning {
-  background: var(--bulb);
-}
-
-.play-tag--lead_change {
-  background: var(--board);
-  color: var(--chalk);
-}
-
-.plays__score {
-  display: flex;
-  gap: 4px;
-  font-family: var(--font-number);
-  font-size: 1.125rem;
-  color: var(--muted);
-}
-
-.plays__score .is-scoring {
-  color: var(--team);
-  font-weight: 700;
-}
-
 /* ---------- 상세: 선수 기록 ---------- */
 .team-tabs .segmented button.is-active {
   background: var(--team);
@@ -707,11 +608,5 @@
   .summary-card__point {
     grid-template-columns: 1fr;
     gap: 2px;
-  }
-
-  .plays__item {
-    grid-template-columns: 3.2em 1fr;
-    gap: 8px;
-    padding: 10px 12px 10px 10px;
   }
 }
