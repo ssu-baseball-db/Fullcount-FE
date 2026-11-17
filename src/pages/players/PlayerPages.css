@@ -400,3 +400,135 @@
 .picker--selected .picker__change {
   display: block;
 }
+
+/* ---------- 선수 비교: 추천 선수 ---------- */
+.suggest__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 20px;
+}
+
+.suggest__head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.suggest__note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.suggest__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 720px) {
+  .suggest__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.suggest__title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.suggest__title span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.suggest__title small {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.suggest__empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.suggest__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+  transition: opacity 150ms;
+}
+
+.suggest__list.is-loading {
+  opacity: 0.5;
+}
+
+.suggest__list li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.suggest__item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggest__item:hover:not(:disabled) {
+  background: var(--soft);
+}
+
+.suggest__item:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.suggest__rank {
+  color: var(--muted);
+  font-family: var(--font-number);
+  text-align: center;
+}
+
+.suggest__list li:first-child .suggest__rank {
+  color: var(--board);
+  font-weight: 600;
+}
+
+.suggest__name {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.suggest__name small {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.suggest__value {
+  font-family: var(--font-number);
+  font-size: 1.0625rem;
+}
