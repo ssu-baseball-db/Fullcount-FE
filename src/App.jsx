@@ -13,6 +13,11 @@ import TeamDetailPage from './pages/teams/TeamDetailPage.jsx';
 import LeadersPage from './pages/leaders/LeadersPage.jsx';
 import GameListPage from './pages/games/GameListPage.jsx';
 import GameDetailPage from './pages/games/GameDetailPage.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import RequireAdmin from './components/RequireAdmin.jsx';
+import AdminHomePage from './pages/admin/AdminHomePage.jsx';
+import PlayerCreatePage from './pages/admin/PlayerCreatePage.jsx';
+import PlayerEditPage from './pages/admin/PlayerEditPage.jsx';
 
 // 다른 페이지로 이동하면 화면 맨 위부터 보이게 한다
 function ScrollToTop() {
@@ -56,6 +61,12 @@ export default function App() {
           <Route path="/games/:gameId" element={<GameDetailPage />} />
 
           {/* 예전 검색 주소로 들어오면 선수 찾기로 보낸다 */}
+          {/* 로그인 · 관리자 (RequireAdmin: 관리자가 아니면 화면을 막는다) */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
+          <Route path="/admin/players/new" element={<RequireAdmin><PlayerCreatePage /></RequireAdmin>} />
+          <Route path="/admin/players/edit" element={<RequireAdmin><PlayerEditPage /></RequireAdmin>} />
+
           <Route path="/search" element={<Navigate to="/players" replace />} />
           <Route path="*" element={<ComingSoon title="페이지를 찾을 수 없어요" />} />
         </Routes>

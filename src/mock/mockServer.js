@@ -18,6 +18,7 @@ import {
 } from './mockData.js';
 import { gamesOn, toGame, gameDetail, findSummary, generateSummary, gameEvents } from './gameMock.js';
 import { isValidDateString } from '../utils/date.js';
+import * as admin from './mockAdmin.js';
 
 // ---------- 공통 검증 ----------
 function parseSeason(value, { required = true } = {}) {
@@ -253,6 +254,19 @@ function listGames(params) {
 
 // ---------- 주소 → 처리 함수 연결 ----------
 const ROUTES = [
+  // 로그인 (백엔드에 제안한 형식)
+  [/^\/api\/auth\/login$/, (_, __, ctx) => admin.login(ctx.body), 'POST'],
+  [/^\/api\/auth\/me$/, (_, __, ctx) => admin.me(ctx)],
+  [/^\/api\/auth\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
+  // 관리자 5.3, 5.4
+  [/^\/api\/admin\/players$/, (_, __, ctx) => admin.createPlayer(ctx), 'POST'],
+  [/^\/api\/admin\/players\/([^/]+)$/, ([id], __, ctx) => admin.updatePlayer(decodeURIComponent(id), ctx), 'PATCH'],
+  [
+    /^\/api\/admin\/players\/([^/]+)\/(batting|pitching)-stats\/([^/]+)$/,
+    ([id, kind, year], __, ctx) =>
+      admin.updateRecord(kind === 'batting' ? 'batter' : 'pitcher', decodeURIComponent(id), parseSeason(year), ctx),
+    'PATCH',
+  ],
   [/^\/api\/games$/, (_, params) => listGames(params)],
   [/^\/api\/games\/([^/]+)$/, ([id]) => gameDetail(decodeURIComponent(id))],
   [/^\/api\/games\/([^/]+)\/summary$/, ([id]) => findSummary(decodeURIComponent(id))],
@@ -275,11 +289,15 @@ const ROUTES = [
   ],
 ];
 
-// method: 'GET'(기본) 또는 'POST'. ROUTES 의 세 번째 값이 없으면 GET 으로 본다
-export function handleMockRequest(path, params, method = 'GET') {
+// method: 'GET'(기본), 'POST', 'PATCH'. ROUTES 의 세 번째 값이 없으면 GET 으로 본다
+// ctx: { body: 요청 본문, token: 로그인 토큰 }
+export function handleMockRequest(path, params, method = 'GET', ctx = {}) {
   for (const [pattern, handler, routeMethod = 'GET'] of ROUTES) {
     const match = path.match(pattern);
-    if (match && routeMethod === method) return copy(handler(match.slice(1), params));
+    if (match && routeMethod === method) {
+      const result = handler(match.slice(1), params, ctx);
+      return result === null || result === undefined ? null : copy(result);
+    }
   }
   throw new ApiError(404, `목업에 없는 API입니다: ${method} ${path}`);
 }
