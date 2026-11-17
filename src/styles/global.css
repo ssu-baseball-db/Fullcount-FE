@@ -40,6 +40,18 @@ body {
 }
 
 body {
+  /* 혹시 화면보다 넓은 요소가 생겨도 페이지 전체가 옆으로 밀리거나 아이폰이 화면을 축소하지 않게 한다
+     (표처럼 옆으로 밀어야 하는 것은 각자 스크롤 영역 안에서 밀린다) */
+  overflow-x: clip;
+}
+
+html {
+  /* 휴대폰을 가로로 돌렸을 때 브라우저가 글자를 멋대로 키우지 않게 한다 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
   background: var(--page);
   color: var(--ink);
   font-family: var(--font-body);
@@ -104,6 +116,16 @@ select {
 @media (max-width: 640px) {
   .container {
     padding: 0 16px;
+  }
+}
+
+/* 휴대폰: 아이폰은 글자가 16px보다 작은 입력칸을 누르면 화면을 확대해 버린다.
+   확대된 채로 남으면 검색창·표가 화면 밖으로 튀어나와 보이므로 입력칸 글자를 16px로 맞춘다. */
+@media (max-width: 760px) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem) !important;
   }
 }
 

@@ -5,6 +5,7 @@
 
 .search-box input {
   flex: 1;
+  width: 100%; /* 입력칸 기본 너비(20글자) 때문에 좁은 화면에서 검색창이 밖으로 밀려나지 않게 한다 */
   min-width: 0;
   border: 2px solid transparent;
   border-right: 0;

@@ -188,13 +188,20 @@
   }
 }
 
+/* 휴대폰: 부문(타율·홈런·타점…)마다 따로 떨어진 카드로 보여준다 */
 @media (max-width: 600px) {
   .leaders__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    background: transparent;
+    border: 0;
   }
 
-  .leader-list + .leader-list {
-    border-left: 0;
-    border-top: 1px solid var(--rule);
+  .leader-list,
+  .leader-list + .leader-list,
+  .leader-list:nth-child(n + 3) {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
   }
 }

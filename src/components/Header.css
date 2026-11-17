@@ -116,11 +116,12 @@
 }
 
 @media (max-width: 760px) {
-  .site-header__inner {
+  /* .container 의 모바일 padding(0 16px)이 위쪽 여백을 0으로 덮어쓰지 않도록 선택자를 한 단계 구체적으로 쓴다 */
+  .site-header .site-header__inner {
     flex-wrap: wrap;
     height: auto;
     gap: 0 24px;
-    padding-top: 14px;
+    padding-top: 16px;
   }
 
   .site-header__nav {

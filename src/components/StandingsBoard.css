@@ -1,3 +1,8 @@
+.standings-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .standings {
   width: 100%;
   border-collapse: collapse;
@@ -78,7 +83,7 @@
 
   .standings th,
   .standings td {
-    padding: 0 6px;
+    padding: 0 5px;
   }
 
   .standings td {
@@ -86,7 +91,7 @@
   }
 
   .standings .standings__rank {
-    width: 36px;
+    width: 30px;
   }
 
   .standings .standings__team {
