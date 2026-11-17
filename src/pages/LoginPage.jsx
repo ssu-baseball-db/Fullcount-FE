@@ -6,12 +6,12 @@ import PageHeader from '../components/common/PageHeader.jsx';
 import './admin/AdminPages.css';
 
 /**
- * 로그인 화면  /login?next=/admin
- * 사용 API: POST /api/auth/login
+ * 관리자 로그인 화면  /login?next=/admin
+ * 사용 API: GET /api/admin/session (CSRF 토큰), POST /api/admin/login
  * 로그인에 성공하면 next 주소(없으면 메인)로 이동한다.
  */
 export default function LoginPage() {
-  const { user, login, loginWithToken, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') || '/';
@@ -20,8 +20,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [noAuthApi, setNoAuthApi] = useState(false); // 백엔드에 로그인 API가 아직 없음
-  const [token, setToken] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -35,23 +33,14 @@ export default function LoginPage() {
       await login(loginId.trim(), password);
       navigate(next);
     } catch (err) {
-      // 404·405: 백엔드에 로그인 API가 아직 없음 → 임시 토큰 입력칸을 보여준다
-      if (err.status === 404 || err.status === 405) {
-        setNoAuthApi(true);
-        setError('백엔드에 아직 로그인 API(POST /api/auth/login)가 없어 로그인할 수 없습니다.');
-      } else {
-        setError(err.status === 401 ? '아이디 또는 비밀번호가 맞지 않습니다.' : err.message);
-      }
+      if (err.status === 401) setError('아이디 또는 비밀번호가 맞지 않습니다.');
+      else if (err.status === 403) setError('요청 검증에 실패했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.');
+      else if (err.status === 404 || err.status === 405) {
+        setError('백엔드에 관리자 로그인 API(POST /api/admin/login)가 없습니다. 백엔드 버전을 확인해 주세요.');
+      } else setError(err.message);
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function handleToken(event) {
-    event.preventDefault();
-    if (!token.trim()) return;
-    loginWithToken(token.trim());
-    navigate(next);
   }
 
   if (user) {
@@ -61,14 +50,12 @@ export default function LoginPage() {
         <div className="container page-body">
           <div className="card auth-card">
             <p>
-              <strong>{user.loginId}</strong> 계정({user.role === 'ADMIN' ? '관리자' : '일반 회원'})으로 로그인되어 있습니다.
+              <strong>{user.loginId}</strong> 계정(관리자)으로 로그인되어 있습니다.
             </p>
             <div className="form-actions">
-              {user.role === 'ADMIN' && (
-                <Link to="/admin" className="button button--primary">
-                  관리 화면으로 가기
-                </Link>
-              )}
+              <Link to="/admin" className="button button--primary">
+                관리 화면으로 가기
+              </Link>
               <button type="button" className="button" onClick={logout}>
                 로그아웃
               </button>
@@ -110,28 +97,10 @@ export default function LoginPage() {
 
           {USE_MOCK && (
             <p className="form-hint">
-              샘플 데이터 모드 시험 계정: 관리자 <code>admin</code> / <code>admin1234</code>, 일반 회원 <code>fan</code> /{' '}
-              <code>fan1234</code>
+              샘플 데이터 모드 시험 계정: <code>admin</code> / <code>admin1234</code>
             </p>
           )}
         </form>
-
-        {/* 백엔드에 로그인 API가 생기기 전까지만 쓰는 임시 방법 */}
-        {noAuthApi && (
-          <form className="card auth-card auth-card--temp" onSubmit={handleToken}>
-            <p className="form-hint">
-              백엔드에 아직 로그인 API가 없습니다. 임시로 백엔드의 관리자 토큰(<code>FULLCOUNT_ADMIN_TOKEN</code> 값)을 입력해
-              접속할 수 있습니다. 토큰이 맞는지는 관리자 기능을 쓸 때 백엔드가 확인합니다.
-            </p>
-            <label className="field">
-              <span className="field__label">관리자 토큰</span>
-              <input type="password" value={token} onChange={(e) => setToken(e.target.value)} />
-            </label>
-            <button type="submit" className="button">
-              토큰으로 접속
-            </button>
-          </form>
-        )}
       </div>
     </>
   );

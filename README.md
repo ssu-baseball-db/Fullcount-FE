@@ -54,11 +54,11 @@ npm run build
 | 팀 상세 | `/teams/{teamId}?year=&type=&sort=` | standings, `teams/{teamId}/batting-stats·pitching-stats` (2.2, 2.3) | 장정훈 |
 | 기록 순위 | `/leaders?year=&type=&category=&team=&qualified=` | `batting-stats`, `pitching-stats` (1.2, 1.3) | 장정훈 |
 | 경기 | `/games`, `/games/{gameId}` | `GET /api/games` (3.1~3.3) | 박은호 |
-| 로그인 | `/login` | `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout` (백엔드에 제안, 아직 미구현) | 장정훈 |
+| 로그인 | `/login` | `GET /api/admin/session`, `POST /api/admin/login`, `POST /api/admin/logout` | 장정훈 |
 | 관리 (관리자만) | `/admin`, `/admin/players/new`, `/admin/players/edit?id=` | `POST /api/admin/players`, `PATCH /api/admin/players/{id}`, `PATCH …/batting-stats/{year}`, `PATCH …/pitching-stats/{year}` (5.3, 5.4) | 장정훈 |
 
-**권한:** 로그인하면 모든 요청에 `Authorization: Bearer 토큰`을 붙이고, 관리자 API의 권한 확인은 백엔드가 토큰으로 DB(계정·세션)를 조회해서 합니다.
-헤더에는 로그인 버튼을 두지 않고, 페이지 맨 아래(푸터)의 작은 '관리자 로그인' 링크나 `/login` 주소로 들어갑니다. 프론트의 '관리' 메뉴 숨김과 `RequireAdmin`은 화면 안내용입니다. 백엔드에 로그인 API가 생기기 전에는 로그인 화면의 임시 입력칸에 `FULLCOUNT_ADMIN_TOKEN` 값을 넣어 관리자 기능을 시험할 수 있습니다.
+**권한:** 백엔드 관리자 세션 방식을 따릅니다. 화면을 열면 `GET /api/admin/session`으로 로그인 상태와 CSRF 토큰을 받고, 로그인하면 백엔드가 세션 쿠키를 발급합니다. POST·PATCH 요청에는 `X-CSRF-Token` 헤더를 붙이고, 관리자 API의 권한 확인은 백엔드가 세션과 CSRF 토큰으로 합니다. 관리자 계정은 백엔드 설정(`fullcount.admin.username`, `fullcount.admin.password-hash`) 하나뿐입니다.
+헤더에는 로그인 버튼을 두지 않고, 페이지 맨 아래(푸터)의 작은 '관리자 로그인' 링크나 `/login` 주소로 들어갑니다. 프론트의 '관리' 메뉴 숨김과 `RequireAdmin`은 화면 안내용입니다. 목업 모드의 시험 계정은 `admin` / `admin1234`입니다.
 샘플 데이터 모드 시험 계정: 관리자 `admin` / `admin1234`, 일반 회원 `fan` / `fan1234`.
 
 주소의 `?year=` 같은 조건은 화면에서 바꿀 때마다 주소에도 반영되므로, 주소를 복사해 공유하면 같은 화면이 열립니다.

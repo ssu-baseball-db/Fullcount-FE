@@ -254,10 +254,10 @@ function listGames(params) {
 
 // ---------- 주소 → 처리 함수 연결 ----------
 const ROUTES = [
-  // 로그인 (백엔드에 제안한 형식)
-  [/^\/api\/auth\/login$/, (_, __, ctx) => admin.login(ctx.body), 'POST'],
-  [/^\/api\/auth\/me$/, (_, __, ctx) => admin.me(ctx)],
-  [/^\/api\/auth\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
+  // 관리자 로그인 (Fullcount-BE AdminSessionController)
+  [/^\/api\/admin\/session$/, () => admin.session()],
+  [/^\/api\/admin\/login$/, (_, __, ctx) => admin.login(ctx), 'POST'],
+  [/^\/api\/admin\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
   // 관리자 5.3, 5.4
   [/^\/api\/admin\/players$/, (_, __, ctx) => admin.createPlayer(ctx), 'POST'],
   [/^\/api\/admin\/players\/([^/]+)$/, ([id], __, ctx) => admin.updatePlayer(decodeURIComponent(id), ctx), 'PATCH'],
@@ -290,7 +290,7 @@ const ROUTES = [
 ];
 
 // method: 'GET'(기본), 'POST', 'PATCH'. ROUTES 의 세 번째 값이 없으면 GET 으로 본다
-// ctx: { body: 요청 본문, token: 로그인 토큰 }
+// ctx: { body: 요청 본문, csrfToken: X-CSRF-Token 헤더 값 }
 export function handleMockRequest(path, params, method = 'GET', ctx = {}) {
   for (const [pattern, handler, routeMethod = 'GET'] of ROUTES) {
     const match = path.match(pattern);
