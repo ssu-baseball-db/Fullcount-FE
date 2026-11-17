@@ -9,3 +9,22 @@
 .site-footer p {
   margin: 0 0 4px;
 }
+
+.site-footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-footer__admin {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.site-footer__admin:hover {
+  text-decoration: underline;
+  opacity: 1;
+}

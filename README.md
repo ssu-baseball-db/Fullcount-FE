@@ -58,7 +58,7 @@ npm run build
 | 관리 (관리자만) | `/admin`, `/admin/players/new`, `/admin/players/edit?id=` | `POST /api/admin/players`, `PATCH /api/admin/players/{id}`, `PATCH …/batting-stats/{year}`, `PATCH …/pitching-stats/{year}` (5.3, 5.4) | 장정훈 |
 
 **권한:** 로그인하면 모든 요청에 `Authorization: Bearer 토큰`을 붙이고, 관리자 API의 권한 확인은 백엔드가 토큰으로 DB(계정·세션)를 조회해서 합니다.
-프론트의 '관리' 메뉴 숨김과 `RequireAdmin`은 화면 안내용입니다. 백엔드에 로그인 API가 생기기 전에는 로그인 화면의 임시 입력칸에 `FULLCOUNT_ADMIN_TOKEN` 값을 넣어 관리자 기능을 시험할 수 있습니다.
+헤더에는 로그인 버튼을 두지 않고, 페이지 맨 아래(푸터)의 작은 '관리자 로그인' 링크나 `/login` 주소로 들어갑니다. 프론트의 '관리' 메뉴 숨김과 `RequireAdmin`은 화면 안내용입니다. 백엔드에 로그인 API가 생기기 전에는 로그인 화면의 임시 입력칸에 `FULLCOUNT_ADMIN_TOKEN` 값을 넣어 관리자 기능을 시험할 수 있습니다.
 샘플 데이터 모드 시험 계정: 관리자 `admin` / `admin1234`, 일반 회원 `fan` / `fan1234`.
 
 주소의 `?year=` 같은 조건은 화면에서 바꿀 때마다 주소에도 반영되므로, 주소를 복사해 공유하면 같은 화면이 열립니다.
