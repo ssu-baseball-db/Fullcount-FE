@@ -47,21 +47,19 @@ export default function Header() {
             </div>
           )}
 
-          <div className="site-header__auth">
-            {user ? (
-              <>
-                <span className="site-header__user" title={isAdmin ? '관리자' : '일반 회원'}>
-                  {user.loginId}
-                  {isAdmin && <span className="site-header__role">관리자</span>}
-                </span>
-                <button type="button" onClick={logout}>
-                  로그아웃
-                </button>
-              </>
-            ) : (
-              <Link to={`/login?next=${encodeURIComponent(pathname)}`}>로그인</Link>
-            )}
-          </div>
+          {/* 로그인 버튼은 숨기고, 로그인한 뒤에만 계정과 로그아웃을 보여 준다.
+              관리자 로그인은 아래쪽(푸터)의 작은 링크나 /login 주소로 들어간다. */}
+          {user && (
+            <div className="site-header__auth">
+              <span className="site-header__user" title={isAdmin ? '관리자' : '일반 회원'}>
+                {user.loginId}
+                {isAdmin && <span className="site-header__role">관리자</span>}
+              </span>
+              <button type="button" onClick={logout}>
+                로그아웃
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
