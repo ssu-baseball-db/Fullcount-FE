@@ -379,3 +379,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 선수 카드 안의 '비교할 시즌' 선택 */
+.picker__season {
+  margin-top: 12px;
+}
+
+.compare-name__period {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.radar-table thead th small {
+  display: block;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.picker--selected .picker__change {
+  display: block;
+}
