@@ -36,3 +36,15 @@ export function updateSeasonRecord(playerId, type, year, changes) {
   const kind = type === 'pitcher' ? 'pitching-stats' : 'batting-stats';
   return sendJson('PATCH', `/api/admin/players/${encodeURIComponent(playerId)}/${kind}/${year}`, changes);
 }
+
+/**
+ * SQL 시연 — 시연용 SQLite 복제본에서 SQL 한 문장 실행
+ * POST /api/admin/sql-preview   본문 { sql } (UTF-8 기준 8KB 이하)
+ * 응답 200: { columns: [...], rows: [[...], ...] (최대 100행), affectedRows: 숫자 | null, truncated: boolean }
+ * 요청마다 같은 스냅샷을 메모리에 복제해서 실행하므로 UPDATE 등 변경은 요청이 끝나면 버려진다. (실제 서비스 DB에는 반영 안 됨)
+ * 오류: 400 입력 오류, 401·403 권한, 408 시간 초과(2초), 422 문법 오류·허용되지 않는 문장·제약조건 위반,
+ *       502·503 SQL 시연 서비스 연결 문제. 모두 { message } 로 이유가 온다.
+ */
+export function runSqlPreview(sql) {
+  return sendJson('POST', '/api/admin/sql-preview', { sql });
+}

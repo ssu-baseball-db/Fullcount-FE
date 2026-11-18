@@ -33,6 +33,16 @@ export default function AdminHomePage() {
               </span>
             </Link>
           </li>
+          <li>
+            <Link to="/admin/sql" className="admin-menu__item">
+              <span className="admin-menu__title">SQL 실행</span>
+              <span className="admin-menu__desc">
+                SQL 문장을 직접 입력해 실행하고 결과와 실행계획(EXPLAIN QUERY PLAN)을 봅니다. 시연용 DB 복제본에서 실행되므로
+                실제 서비스 데이터는 바뀌지 않습니다.
+              </span>
+              <span className="admin-menu__api">POST /api/admin/sql-preview</span>
+            </Link>
+          </li>
         </ul>
       </div>
     </>
