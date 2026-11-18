@@ -1,0 +1,78 @@
+/* ---------- 관리 모드 표시 ---------- */
+.admin-mode-bar {
+  background: #2c2620;
+  color: #efe6d6;
+  border-top: 3px solid var(--bulb);
+  font-size: 0.8125rem;
+}
+
+.admin-mode-bar .admin-mode-bar__inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-height: 40px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.admin-mode-bar__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--bulb);
+  color: #2c2620;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* 켜져 있다는 느낌의 작은 점 */
+.admin-mode-bar__badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2c2620;
+}
+
+.admin-mode-bar__text {
+  flex: 1;
+  min-width: 0;
+  color: #cfc3ae;
+  word-break: keep-all;
+}
+
+.admin-mode-bar__exit {
+  color: #efe6d6;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-mode-bar__exit:hover {
+  color: var(--bulb);
+}
+
+/* 관리 화면의 제목 띠는 일반 화면(초록)과 다른 색으로 */
+.is-admin-mode .page-header {
+  background: #3a322a;
+}
+
+.is-admin-mode .page-header__desc {
+  color: #cfc3ae;
+}
+
+@media (max-width: 720px) {
+  .admin-mode-bar__text {
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  .admin-mode-bar__exit {
+    margin-left: auto;
+  }
+}

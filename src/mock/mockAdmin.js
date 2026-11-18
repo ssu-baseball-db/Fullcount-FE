@@ -160,3 +160,79 @@ export function updateRecord(type, playerId, year, ctx) {
   row.qualified = type === 'batter' ? row.plateAppearances >= 447 : row.outsPitched >= 432;
   return row;
 }
+
+// ---------- SQL 시연 (백엔드 db/sql_preview.py 흉내) ----------
+// 목업에는 SQL 엔진이 없어서 화면 확인용으로 몇 가지 모양만 흉내 낸다.
+//   - SELECT … FROM player …        → 목업 선수 목록(최대 100행, 넘으면 truncated)
+//   - EXPLAIN QUERY PLAN …           → 실행계획 예시
+//   - UPDATE/INSERT/DELETE           → 변경 행 수 1 (값에 -1 이 있으면 제약조건 위반)
+//   - PRAGMA·ATTACH·DROP·sqlite_master 등 → 허용되지 않음(422)
+// 실제 결과는 백엔드에 연결해서(VITE_USE_MOCK=false) 확인한다.
+const MAX_SQL_BYTES = 8192;
+const MAX_ROWS = 100;
+
+export function sqlPreview(ctx) {
+  requireAdmin(ctx);
+  const sql = String(ctx.body?.sql ?? '');
+  if (!sql.trim() || new TextEncoder().encode(sql).length > MAX_SQL_BYTES) {
+    throw new ApiError(400, 'SQL을 8KB 이내로 입력해 주세요.');
+  }
+  const text = sql.trim().replace(/;\s*$/, '');
+  if (text.includes(';')) throw new ApiError(422, 'You can only execute one statement at a time.');
+  if (/\b(pragma|attach|detach|drop|create|alter|vacuum)\b|sqlite_master|load_extension/i.test(text)) {
+    throw new ApiError(422, 'not authorized');
+  }
+
+  if (/^explain\s+query\s+plan\b/i.test(text)) {
+    if (!/season_year/i.test(text)) {
+      return { columns: ['id', 'parent', 'notused', 'detail'], rows: [[2, 0, 216, 'SCAN batter_season']], affectedRows: null, truncated: false };
+    }
+    return {
+      columns: ['id', 'parent', 'notused', 'detail'],
+      rows: [
+        [4, 0, 62, 'SEARCH batter_season USING INDEX idx_batter_season_team (season_year=?)'],
+        [34, 0, 0, 'USE TEMP B-TREE FOR ORDER BY'],
+      ],
+      affectedRows: null,
+      truncated: false,
+    };
+  }
+
+  if (/^(update|insert|delete)\b/i.test(text)) {
+    if (/=\s*-\s*1\b/.test(text)) throw new ApiError(422, 'CHECK constraint failed: home_runs >= 0');
+    const returning = /\breturning\b/i.test(text);
+    return {
+      columns: returning ? ['player_id', 'player_name'] : [],
+      rows: returning ? [['75847', '최정 (시연)']] : [],
+      affectedRows: 1,
+      truncated: false,
+    };
+  }
+
+  // 예시 'JOIN' 쿼리: 그 시즌 홈런 상위 5명
+  if (/^select\b/i.test(text) && /\bbatter_season\b/i.test(text) && /home_runs/i.test(text)) {
+    const year = Number(text.match(/season_year\s*=\s*(\d{4})/i)?.[1] ?? 2025);
+    const top = battingRows
+      .filter((row) => row.season === year)
+      .sort((x, y) => y.homeRuns - x.homeRuns)
+      .slice(0, 5)
+      .map((row) => [row.playerName, row.teamId, row.homeRuns]);
+    return { columns: ['player_name', 'team_id', 'home_runs'], rows: top, affectedRows: null, truncated: false };
+  }
+
+  if (/^(select|with)\b/i.test(text) && /\bfrom\s+player\b/i.test(text)) {
+    // WHERE player_id = '…' 가 있으면 그 선수만 (예시의 75847 은 목업에 없어서 백엔드 시연 DB 값을 흉내 낸다)
+    const id = text.match(/player_id\s*=\s*'([^']*)'/i)?.[1];
+    const source = id ? [...players.values()].filter((p) => p.playerId === id) : [...players.values()];
+    const all = source.map((p) => [p.playerId, p.playerName, p.birthDate ?? null]);
+    if (id === '75847' && all.length === 0) all.push(['75847', '최정', '1987-02-28']);
+    return {
+      columns: ['player_id', 'player_name', 'birth_date'],
+      rows: all.slice(0, MAX_ROWS),
+      affectedRows: null,
+      truncated: all.length > MAX_ROWS,
+    };
+  }
+
+  throw new ApiError(422, '목업에서는 player 조회, EXPLAIN QUERY PLAN, UPDATE 예시만 흉내 냅니다. 실제 결과는 백엔드에 연결해서 확인해 주세요.');
+}

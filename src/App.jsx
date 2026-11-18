@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { USE_MOCK } from './api/client.js';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
+import AdminModeBar from './components/AdminModeBar.jsx';
 import MainPage from './pages/MainPage.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
 import PlayerSearchPage from './pages/players/PlayerSearchPage.jsx';
@@ -30,10 +31,15 @@ function ScrollToTop() {
 
 // 페이지 주소(URL)와 화면을 연결하는 곳
 export default function App() {
+  // 관리자 화면(/admin…)에서는 '관리 모드' 띠를 보여 주고 제목 띠 색을 바꾼다
+  const { pathname } = useLocation();
+  const adminMode = pathname === '/admin' || pathname.startsWith('/admin/');
+
   return (
-    <div className="app">
+    <div className={`app ${adminMode ? 'is-admin-mode' : ''}`}>
       <ScrollToTop />
       <Header />
+      {adminMode && <AdminModeBar />}
       {/* 목업 모드일 때만 보이는 안내 (실제 백엔드에 연결하면 사라진다) */}
       {USE_MOCK && (
         <p className="mock-banner">
@@ -66,6 +72,8 @@ export default function App() {
           <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
           <Route path="/admin/players/new" element={<RequireAdmin><PlayerCreatePage /></RequireAdmin>} />
           <Route path="/admin/players/edit" element={<RequireAdmin><PlayerEditPage /></RequireAdmin>} />
+          {/* SQL 실행은 관리 화면의 탭으로 들어갔다. 예전 주소로 와도 그 탭을 연다 */}
+          <Route path="/admin/sql" element={<Navigate to="/admin?tab=sql" replace />} />
 
           <Route path="/search" element={<Navigate to="/players" replace />} />
           <Route path="*" element={<ComingSoon title="페이지를 찾을 수 없어요" />} />

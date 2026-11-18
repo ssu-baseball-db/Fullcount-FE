@@ -259,6 +259,7 @@ const ROUTES = [
   [/^\/api\/admin\/login$/, (_, __, ctx) => admin.login(ctx), 'POST'],
   [/^\/api\/admin\/logout$/, (_, __, ctx) => admin.logout(ctx), 'POST'],
   // 관리자 5.3, 5.4
+  [/^\/api\/admin\/sql-preview$/, (_, __, ctx) => admin.sqlPreview(ctx), 'POST'],
   [/^\/api\/admin\/players$/, (_, __, ctx) => admin.createPlayer(ctx), 'POST'],
   [/^\/api\/admin\/players\/([^/]+)$/, ([id], __, ctx) => admin.updatePlayer(decodeURIComponent(id), ctx), 'PATCH'],
   [
