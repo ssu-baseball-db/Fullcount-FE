@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { USE_MOCK } from './api/client.js';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
+import AdminModeBar from './components/AdminModeBar.jsx';
 import MainPage from './pages/MainPage.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
 import PlayerSearchPage from './pages/players/PlayerSearchPage.jsx';
@@ -30,10 +31,15 @@ function ScrollToTop() {
 
 // 페이지 주소(URL)와 화면을 연결하는 곳
 export default function App() {
+  // 관리자 화면(/admin…)에서는 '관리 모드' 띠를 보여 주고 제목 띠 색을 바꾼다
+  const { pathname } = useLocation();
+  const adminMode = pathname === '/admin' || pathname.startsWith('/admin/');
+
   return (
-    <div className="app">
+    <div className={`app ${adminMode ? 'is-admin-mode' : ''}`}>
       <ScrollToTop />
       <Header />
+      {adminMode && <AdminModeBar />}
       {/* 목업 모드일 때만 보이는 안내 (실제 백엔드에 연결하면 사라진다) */}
       {USE_MOCK && (
         <p className="mock-banner">
