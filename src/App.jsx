@@ -18,7 +18,6 @@ import RequireAdmin from './components/RequireAdmin.jsx';
 import AdminHomePage from './pages/admin/AdminHomePage.jsx';
 import PlayerCreatePage from './pages/admin/PlayerCreatePage.jsx';
 import PlayerEditPage from './pages/admin/PlayerEditPage.jsx';
-import SqlPreviewPage from './pages/admin/SqlPreviewPage.jsx';
 
 // 다른 페이지로 이동하면 화면 맨 위부터 보이게 한다
 function ScrollToTop() {
@@ -67,7 +66,8 @@ export default function App() {
           <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
           <Route path="/admin/players/new" element={<RequireAdmin><PlayerCreatePage /></RequireAdmin>} />
           <Route path="/admin/players/edit" element={<RequireAdmin><PlayerEditPage /></RequireAdmin>} />
-          <Route path="/admin/sql" element={<RequireAdmin><SqlPreviewPage /></RequireAdmin>} />
+          {/* SQL 실행은 관리 화면의 탭으로 들어갔다. 예전 주소로 와도 그 탭을 연다 */}
+          <Route path="/admin/sql" element={<Navigate to="/admin?tab=sql" replace />} />
 
           <Route path="/search" element={<Navigate to="/players" replace />} />
           <Route path="*" element={<ComingSoon title="페이지를 찾을 수 없어요" />} />

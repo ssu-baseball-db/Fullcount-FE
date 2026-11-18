@@ -463,3 +463,55 @@
 .sql-error__hint {
   font-size: 0.8125rem;
 }
+
+/* ---------- 관리 화면 탭 ---------- */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--rule);
+  overflow-x: auto;
+}
+
+.admin-tabs__tab {
+  margin-bottom: -2px;
+  padding: 10px 18px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-tabs__tab:hover {
+  color: var(--ink);
+}
+
+.admin-tabs__tab.is-active {
+  border-bottom-color: var(--board);
+  color: var(--board);
+}
+
+.admin-tabs__desc {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  word-break: keep-all;
+}
+
+/* 글자처럼 보이는 버튼 (안내 문장 속 탭 이동) */
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

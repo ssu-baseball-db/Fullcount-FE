@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { runSqlPreview } from '../../api/adminApi.js';
-import PageHeader from '../../components/common/PageHeader.jsx';
 import '../../components/common/StatTable.css';
 import './AdminPages.css';
 
@@ -72,11 +71,12 @@ function byteLength(text) {
 }
 
 /**
- * SQL 실행 화면  /admin/sql   (관리자만, RequireAdmin 으로 보호)
+ * 관리 화면(/admin?tab=sql)의 'SQL 실행' 탭 내용
  * API: POST /api/admin/sql-preview  { sql } → { columns, rows, affectedRows, truncated }
  * 시연용 DB 복제본에서 한 문장만 실행하고, 변경은 요청이 끝나면 버려진다.
+ * onOpenDataTab: '서비스 데이터 관리' 탭으로 옮겨 가는 함수 (실제 데이터를 고칠 때 안내용)
  */
-export default function SqlPreviewPage() {
+export default function SqlConsole({ onOpenDataTab }) {
   const [sql, setSql] = useState(EXAMPLES[0].sql);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState(null); // { sql, data, ms } 또는 { sql, error }
@@ -107,89 +107,85 @@ export default function SqlPreviewPage() {
 
   return (
     <>
-      <PageHeader
-        title="SQL 실행"
-        description="SQL 한 문장을 직접 실행하고 결과와 실행계획을 봅니다. 시연용 DB 복제본에서 실행되므로 실제 서비스 데이터는 바뀌지 않습니다."
-      />
-      <div className="container page-body admin-body">
-        <p className="admin-back">
-          <Link to="/admin" className="text-link">
-            ← 관리 화면으로
-          </Link>
-        </p>
-
-        <form
-          className="card sql-editor"
-          onSubmit={(event) => {
-            event.preventDefault();
-            run();
-          }}
-        >
-          <div className="sql-chips" role="group" aria-label="예시 쿼리">
-            <span className="sql-chips__label">예시</span>
-            {EXAMPLES.map((example) => (
-              <button key={example.label} type="button" className="sql-chip" onClick={() => loadSql(example.sql)}>
-                {example.label}
-              </button>
-            ))}
-          </div>
-
-          <label className="sql-editor__label" htmlFor="sql-input">
-            SQL
-          </label>
-          <textarea
-            id="sql-input"
-            ref={editorRef}
-            className="sql-editor__input"
-            value={sql}
-            onChange={(event) => setSql(event.target.value)}
-            onKeyDown={(event) => {
-              // Ctrl+Enter (맥은 Cmd+Enter) 로 바로 실행
-              if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-                event.preventDefault();
-                run();
-              }
-            }}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            rows={8}
-          />
-
-          <div className="sql-editor__bar">
-            <button type="submit" className="button button--primary" disabled={!canRun}>
-              {running ? '실행 중…' : '실행'}
+      <p className="admin-tabs__desc">
+        SQL 한 문장을 직접 입력해 실행하고 결과와 실행계획을 봅니다. 시연용 DB 복제본에서 실행되므로 실제 서비스 데이터는
+        바뀌지 않습니다.
+      </p>
+      <form
+        className="card sql-editor"
+        onSubmit={(event) => {
+          event.preventDefault();
+          run();
+        }}
+      >
+        <div className="sql-chips" role="group" aria-label="예시 쿼리">
+          <span className="sql-chips__label">예시</span>
+          {EXAMPLES.map((example) => (
+            <button key={example.label} type="button" className="sql-chip" onClick={() => loadSql(example.sql)}>
+              {example.label}
             </button>
-            <span className="sql-editor__shortcut">Ctrl + Enter</span>
-            <span className={`sql-editor__bytes ${tooLong ? 'is-over' : ''}`}>
-              {bytes.toLocaleString()} / {MAX_SQL_BYTES.toLocaleString()} bytes
-            </span>
-          </div>
+          ))}
+        </div>
 
-          <div className="sql-tables">
-            <span className="sql-chips__label">테이블</span>
-            {TABLES.map((table) => (
-              <button
-                key={table}
-                type="button"
-                className="sql-chip sql-chip--table"
-                title={`${table} 앞 20행 보기`}
-                onClick={() => loadSql(`SELECT *\nFROM ${table}\nLIMIT 20;`)}
-              >
-                {table}
-              </button>
-            ))}
-          </div>
+        <label className="sql-editor__label" htmlFor="sql-input">
+          SQL
+        </label>
+        <textarea
+          id="sql-input"
+          ref={editorRef}
+          className="sql-editor__input"
+          value={sql}
+          onChange={(event) => setSql(event.target.value)}
+          onKeyDown={(event) => {
+            // Ctrl+Enter (맥은 Cmd+Enter) 로 바로 실행
+            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+              event.preventDefault();
+              run();
+            }
+          }}
+          spellCheck={false}
+          autoCapitalize="off"
+          autoCorrect="off"
+          rows={8}
+        />
 
-          <p className="form-hint">
-            한 번에 한 문장만 실행할 수 있고, 결과는 최대 100행(64KB)까지 보입니다. 실행 시간은 2초로 제한됩니다.
-            <code>UPDATE</code>·<code>INSERT</code>·<code>DELETE</code>도 실행되지만 요청이 끝나면 되돌아갑니다. 실제 데이터를
-            고칠 때는 <Link to="/admin/players/edit" className="text-link">선수 정보·시즌 기록 수정</Link>을 쓰세요.
-          </p>
-        </form>
+        <div className="sql-editor__bar">
+          <button type="submit" className="button button--primary" disabled={!canRun}>
+            {running ? '실행 중…' : '실행'}
+          </button>
+          <span className="sql-editor__shortcut">Ctrl + Enter</span>
+          <span className={`sql-editor__bytes ${tooLong ? 'is-over' : ''}`}>
+            {bytes.toLocaleString()} / {MAX_SQL_BYTES.toLocaleString()} bytes
+          </span>
+        </div>
 
-        {result && <SqlResult result={result} />}
-      </div>
+        <div className="sql-tables">
+          <span className="sql-chips__label">테이블</span>
+          {TABLES.map((table) => (
+            <button
+              key={table}
+              type="button"
+              className="sql-chip sql-chip--table"
+              title={`${table} 앞 20행 보기`}
+              onClick={() => loadSql(`SELECT *\nFROM ${table}\nLIMIT 20;`)}
+            >
+              {table}
+            </button>
+          ))}
+        </div>
+
+        <p className="form-hint">
+          한 번에 한 문장만 실행할 수 있고, 결과는 최대 100행(64KB)까지 보입니다. 실행 시간은 2초로 제한됩니다.
+          <code>UPDATE</code>·<code>INSERT</code>·<code>DELETE</code>도 실행되지만 요청이 끝나면 되돌아갑니다. 실제 데이터를
+          고칠 때는{' '}
+          <button type="button" className="link-button" onClick={onOpenDataTab}>
+            서비스 데이터 관리
+          </button>{' '}
+          탭을 쓰세요.
+        </p>
+      </form>
+
+      {result && <SqlResult result={result} />}
     </>
   );
 }
@@ -332,7 +328,7 @@ function SqlError({ error }) {
       <code className="sql-error__message">{error?.message}</code>
       {hint && <span className="sql-error__hint">{hint}</span>}
       {(status === 401 || status === 403) && (
-        <Link to="/login?next=%2Fadmin%2Fsql" className="text-link">
+        <Link to="/login?next=%2Fadmin%3Ftab%3Dsql" className="text-link">
           다시 로그인하기
         </Link>
       )}
