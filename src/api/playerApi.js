@@ -32,10 +32,11 @@ export function groupBySeasonPlayer(rows) {
     const positions = [...new Set(seasons.map((s) => s.position).filter(Boolean))];
 
     // 연속된 시즌의 같은 팀은 한 구간으로 묶는다: KIA 2018~2022, LG 2023~2025
+    // 같은 구단이라도 표시명이 바뀌면 구간을 나눈다: 넥센 2015~2018, 키움 2019~2022
     const teams = [];
     seasons.forEach((s) => {
       const last = teams[teams.length - 1];
-      if (last && last.teamId === s.teamId && last.to === s.season - 1) last.to = s.season;
+      if (last && last.teamId === s.teamId && last.teamName === s.teamName && last.to === s.season - 1) last.to = s.season;
       else teams.push({ teamId: s.teamId, teamName: s.teamName, from: s.season, to: s.season });
     });
 
